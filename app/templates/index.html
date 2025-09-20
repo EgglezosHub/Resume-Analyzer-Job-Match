@@ -1,0 +1,96 @@
+<!-- app/templates/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Resume Match</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tailwind CDN for quick styling; remove if you prefer plain CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">Resume Analyzer & Job Match</h1>
+    <p class="text-sm text-slate-600 mb-6">Upload your resume (PDF) and paste a job description. Click Analyze to see match score, missing skills, and suggestions.</p>
+
+    {% if error %}
+      <div class="mb-4 p-3 rounded bg-red-100 text-red-800">{{ error }}</div>
+    {% endif %}
+
+    <form action="/ui-match" method="post" enctype="multipart/form-data" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Resume (PDF)</label>
+        <input name="file" type="file" accept="application/pdf" required
+               class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"/>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Job Description</label>
+        <textarea name="job_description" rows="10" required
+                  class="w-full p-3 border rounded outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Paste the job description here..."></textarea>
+      </div>
+
+      <button type="submit"
+        class="px-4 py-2 rounded bg-indigo-600 text-white font-medium hover:bg-indigo-700">
+        Analyze
+      </button>
+    </form>
+
+    {% if result %}
+      <div class="mt-8 p-4 rounded border bg-white">
+        <h2 class="text-xl font-semibold mb-3">Results</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-3 rounded bg-slate-100">
+            <div class="text-sm text-slate-500">Match Score</div>
+            <div class="text-2xl font-bold">{{ '%.2f'|format(result.match_score) }}</div>
+          </div>
+          <div class="p-3 rounded bg-slate-100">
+            <div class="text-sm text-slate-500">Semantic Similarity</div>
+            <div class="text-2xl font-bold">{{ '%.2f'|format(result.semantic_similarity) }}</div>
+          </div>
+          <div class="p-3 rounded bg-slate-100">
+            <div class="text-sm text-slate-500">Skill Overlap</div>
+            <div class="text-2xl font-bold">{{ '%.2f'|format(result.skill_overlap) }}</div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="text-sm font-medium mb-1">Extracted Resume Skills</div>
+          <div class="flex flex-wrap gap-2">
+            {% for s in result.skills %}
+              <span class="px-2 py-1 text-sm bg-slate-100 rounded">{{ s }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="text-sm font-medium mb-1">Missing Skills (from JD)</div>
+          {% if result.missing_skills %}
+            <div class="flex flex-wrap gap-2">
+              {% for s in result.missing_skills %}
+                <span class="px-2 py-1 text-sm bg-amber-100 rounded">{{ s }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-sm text-slate-500">None detected 🎉</div>
+          {% endif %}
+        </div>
+
+        <div class="mt-4">
+          <div class="text-sm font-medium mb-1">Recommendations</div>
+          <ul class="list-disc list-inside space-y-1">
+            {% for tip in result.recommendations %}
+              <li class="text-sm">{{ tip }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="mt-4 text-xs text-slate-500">
+          Processed {{ result.pages }} page(s), {{ result.chars }} chars in {{ result.runtime_ms }} ms
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

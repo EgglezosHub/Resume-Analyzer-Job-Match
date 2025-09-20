@@ -1,0 +1,28 @@
+skill,aliases
+docker,docker compose,compose,doccer
+linux,gnu/linux
+bash,shell,sh
+redis,cache,nosql
+postgresql,postgres,psql
+mysql,my-sql
+sql,structured query language
+rest api,rest,restful,api,http api
+nginx,engine x,http server
+wildfly,jboss
+lighttpd,lighttp
+git,version control
+jira,issue tracker
+jenkins,ci/cd,cicd
+bamboo,ci server
+pytest,unit testing,tests
+junit,unit tests
+c++,cpp
+c,c language
+python,py
+socket programming,sockets,tcp,udp,network sockets
+communication protocols,protocols,tcp/ip,http,grpc,rpc
+http server,web server,reverse proxy
+github,gh
+github actions,ci,ci pipeline
+docker compose,compose
+kubernetes,k8s
