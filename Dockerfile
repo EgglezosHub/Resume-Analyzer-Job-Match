@@ -10,15 +10,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
     --extra-index-url https://download.pytorch.org/whl/cpu
 
-# (Optional but recommended) pre-download the sentence-transformers model into the image layer
-# so the first request on Render is fast.
-RUN python - <<'PY'\n\
-from sentence_transformers import SentenceTransformer\n\
-SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')\n\
+# Pre-download the embedding model so the first request on Render is fast
+RUN python - <<PY
+from sentence_transformers import SentenceTransformer
+SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 PY
 
 COPY . .
 
 EXPOSE 8000
-# Respect Render's $PORT; default to 8000 locally.
+# Respect Render's $PORT (Render sets it dynamically)
 CMD ["sh", "-lc", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
