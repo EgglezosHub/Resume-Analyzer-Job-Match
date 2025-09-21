@@ -1,96 +1,279 @@
-<!-- app/templates/index.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Resume Match</title>
+  <title>Resume Analyzer & Job Match</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Tailwind CDN for quick styling; remove if you prefer plain CSS -->
+  <!-- Fonts + Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+          colors: {
+            ink: '#0f172a',
+            card: 'rgba(255,255,255,0.75)',
+          },
+          boxShadow: {
+            soft: '0 10px 25px rgba(2,6,23,0.07)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* subtle animated gradient background */
+    .bg-grid {
+      background:
+        radial-gradient(1000px 600px at 20% -10%, rgba(99,102,241,.25), transparent 60%),
+        radial-gradient(900px 500px at 110% 10%, rgba(16,185,129,.25), transparent 60%),
+        radial-gradient(800px 500px at 50% 120%, rgba(59,130,246,.20), transparent 60%),
+        linear-gradient(180deg, #f8fafc, #f1f5f9);
+    }
+    .glass {
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      background: var(--card, rgba(255,255,255,0.7));
+    }
+    .chip { 
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.25rem .55rem; border-radius:.6rem;
+      background:linear-gradient(180deg,#f8fafc,#eef2ff);
+      border:1px solid #e2e8f0; font-size:.8rem;
+    }
+    .chip-amber { background:linear-gradient(180deg,#fff7ed,#fffbeb); border-color:#fde68a; }
+    .chip-green { background:linear-gradient(180deg,#ecfdf5,#f0fdf4); border-color:#a7f3d0; }
+    .bar {
+      height: .5rem; border-radius: .5rem;
+      background: linear-gradient(90deg,#a5b4fc, #60a5fa, #34d399);
+      box-shadow: inset 0 1px 2px rgba(15,23,42,.15);
+      transition: width .6s ease;
+    }
+    .card {
+      background: var(--card, rgba(255,255,255,0.75));
+      border: 1px solid rgba(15,23,42,0.06);
+      border-radius: 1rem;
+      box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 10px 25px rgba(2,6,23,0.06);
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
-  <div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">Resume Analyzer & Job Match</h1>
-    <p class="text-sm text-slate-600 mb-6">Upload your resume (PDF) and paste a job description. Click Analyze to see match score, missing skills, and suggestions.</p>
+<body class="bg-grid min-h-screen text-ink">
+  <div class="max-w-5xl mx-auto px-5 py-8">
+    <!-- Header -->
+    <header class="mb-8">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-400 shadow-soft grid place-content-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6a2 2 0 0 1 2-2h6l2 2h4a2 2 0 0 1 2 2v3h-2V8H4v10h8v2H6a2 2 0 0 1-2-2V6Z"/><path d="M20 14h-5v-2h5v2Zm-7 3h7v-2h-7v2Zm9 1h-9v2h9v-2Z"/></svg>
+        </div>
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight">Resume Analyzer & Job Match</h1>
+          <p class="text-slate-600">Upload a PDF resume, paste a job description, and get instant, actionable insights.</p>
+        </div>
+      </div>
+    </header>
 
     {% if error %}
-      <div class="mb-4 p-3 rounded bg-red-100 text-red-800">{{ error }}</div>
+      <div class="card p-4 mb-6 border border-rose-200 bg-rose-50/70 text-rose-800">
+        <div class="flex items-start gap-2">
+          <svg class="h-5 w-5 mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2Zm1 15h-2v-2h2v2Zm0-4h-2V7h2v6Z"/></svg>
+          <div>{{ error }}</div>
+        </div>
+      </div>
     {% endif %}
 
-    <form action="/ui-match" method="post" enctype="multipart/form-data" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Resume (PDF)</label>
-        <input name="file" type="file" accept="application/pdf" required
-               class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"/>
+    <!-- Form -->
+    <form id="analyze-form" action="/ui-match" method="post" enctype="multipart/form-data" class="card p-6 mb-8">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold mb-2">Resume (PDF)</label>
+          <input name="file" type="file" accept="application/pdf" required
+                 class="block w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 bg-white/70 border border-slate-200 rounded-lg p-2" />
+          <p class="text-xs text-slate-500 mt-2">PDF only. We ignore unsupported characters automatically.</p>
+        </div>
+
+        <div class="md:col-span-1">
+          <label class="block text-sm font-semibold mb-2">Job Description</label>
+          <textarea name="job_description" rows="7" required
+            class="w-full p-3 bg-white/70 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/40"
+            placeholder="Paste the JD here (bullets/newlines are fine)…"></textarea>
+        </div>
       </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-1">Job Description</label>
-        <textarea name="job_description" rows="10" required
-                  class="w-full p-3 border rounded outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Paste the job description here..."></textarea>
+      <div class="mt-6 flex items-center gap-3">
+        <button id="submit-btn" type="submit"
+                class="px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold shadow-soft hover:bg-indigo-700 transition inline-flex items-center gap-2">
+          <svg id="spinner" class="animate-spin h-4 w-4 hidden" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="4" fill="none" opacity="0.25"></circle>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="4" fill="none"></path>
+          </svg>
+          <span>Analyze</span>
+        </button>
+        <span class="text-xs text-slate-500">No login needed • Runs on your uploaded text</span>
       </div>
-
-      <button type="submit"
-        class="px-4 py-2 rounded bg-indigo-600 text-white font-medium hover:bg-indigo-700">
-        Analyze
-      </button>
     </form>
 
     {% if result %}
-      <div class="mt-8 p-4 rounded border bg-white">
-        <h2 class="text-xl font-semibold mb-3">Results</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="p-3 rounded bg-slate-100">
-            <div class="text-sm text-slate-500">Match Score</div>
-            <div class="text-2xl font-bold">{{ '%.2f'|format(result.match_score) }}</div>
-          </div>
-          <div class="p-3 rounded bg-slate-100">
-            <div class="text-sm text-slate-500">Semantic Similarity</div>
-            <div class="text-2xl font-bold">{{ '%.2f'|format(result.semantic_similarity) }}</div>
-          </div>
-          <div class="p-3 rounded bg-slate-100">
-            <div class="text-sm text-slate-500">Skill Overlap</div>
-            <div class="text-2xl font-bold">{{ '%.2f'|format(result.skill_overlap) }}</div>
-          </div>
-        </div>
-
-        <div class="mt-4">
-          <div class="text-sm font-medium mb-1">Extracted Resume Skills</div>
-          <div class="flex flex-wrap gap-2">
-            {% for s in result.skills %}
-              <span class="px-2 py-1 text-sm bg-slate-100 rounded">{{ s }}</span>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div class="mt-4">
-          <div class="text-sm font-medium mb-1">Missing Skills (from JD)</div>
-          {% if result.missing_skills %}
-            <div class="flex flex-wrap gap-2">
-              {% for s in result.missing_skills %}
-                <span class="px-2 py-1 text-sm bg-amber-100 rounded">{{ s }}</span>
-              {% endfor %}
+      <section class="space-y-6">
+        <!-- Score Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Card template -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-medium text-slate-600">Match Score</h3>
+              <span class="chip {{ 'chip-green' if result.ms.label=='Strong' else ('chip-amber' if result.ms.label=='Medium' else '') }}">
+                {{ result.ms.label }}
+              </span>
             </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.match_score) }}</div>
+              <div class="text-xs text-slate-500">{{ result.ms.pct }}%</div>
+            </div>
+            <div class="mt-3 bg-slate-200/70 rounded">
+              <div class="bar" style="width: {{ result.ms.pct }}%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">{{ result.ms.tip }}</p>
+          </div>
+
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-medium text-slate-600">Semantic Similarity</h3>
+              <span class="chip {{ 'chip-green' if result.ss.label=='Strong' else ('chip-amber' if result.ss.label=='Medium' else '') }}">
+                {{ result.ss.label }}
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.semantic_similarity) }}</div>
+              <div class="text-xs text-slate-500">{{ result.ss.pct }}%</div>
+            </div>
+            <div class="mt-3 bg-slate-200/70 rounded">
+              <div class="bar" style="width: {{ result.ss.pct }}%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">{{ result.ss.tip }}</p>
+          </div>
+
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-medium text-slate-600">Skill Overlap</h3>
+              <span class="chip {{ 'chip-green' if result.so.label=='Strong' else ('chip-amber' if result.so.label=='Medium' else '') }}">
+                {{ result.so.label }}
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.skill_overlap) }}</div>
+              <div class="text-xs text-slate-500">{{ result.so.pct }}%</div>
+            </div>
+            <div class="mt-3 bg-slate-200/70 rounded">
+              <div class="bar" style="width: {{ result.so.pct }}%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">{{ result.so.tip }}</p>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="card p-5">
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <h3 class="text-sm font-semibold text-slate-700">Extracted from Resume</h3>
+                <span class="chip">count {{ result.skills | length }}</span>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                {% for s in result.skills %}
+                  <span class="chip">{{ s }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <h3 class="text-sm font-semibold text-slate-700">JD Missing in Resume</h3>
+                <span class="chip {{ 'chip-amber' if result.missing_skills|length else '' }}">
+                  {{ result.missing_skills|length }} gap{{ '' if result.missing_skills|length==1 else 's' }}
+                </span>
+              </div>
+              {% if result.missing_skills %}
+                <div class="flex flex-wrap gap-2">
+                  {% for s in result.missing_skills %}
+                    <span class="chip chip-amber">{{ s }}</span>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="text-sm text-emerald-700 bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2 inline-flex items-center gap-2">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4 1.5 1.5L11 16l-3.5-3.5L9 12z"/><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2z" opacity=".15"/></svg>
+                  Great—no explicit JD gaps detected!
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="card p-5">
+          <h3 class="text-lg font-semibold mb-2">Recommendations</h3>
+          {% if result.recommendations and result.recommendations|length %}
+            <ul class="space-y-2">
+              {% for tip in result.recommendations %}
+                <li class="flex items-start gap-2">
+                  <svg class="h-5 w-5 text-indigo-500 mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 2h3v3h-3zM5 16l-2-2 7-7 4 4 7-7 2 2-9 9-4-4z"/></svg>
+                  <span class="text-sm">{{ tip }}</span>
+                </li>
+              {% endfor %}
+            </ul>
           {% else %}
-            <div class="text-sm text-slate-500">None detected 🎉</div>
+            <div class="text-sm text-slate-600">No extra recommendations—your resume aligns well with this JD.</div>
           {% endif %}
         </div>
 
-        <div class="mt-4">
-          <div class="text-sm font-medium mb-1">Recommendations</div>
-          <ul class="list-disc list-inside space-y-1">
-            {% for tip in result.recommendations %}
-              <li class="text-sm">{{ tip }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-
-        <div class="mt-4 text-xs text-slate-500">
-          Processed {{ result.pages }} page(s), {{ result.chars }} chars in {{ result.runtime_ms }} ms
-        </div>
-      </div>
+        <!-- Advanced -->
+        <details class="card p-5 group">
+          <summary class="cursor-pointer text-sm font-semibold text-slate-700 select-none">Advanced details (parsed metrics & improvements)</summary>
+          <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <div class="text-sm font-medium text-slate-700 mb-1">Parsed Metrics</div>
+              {% if result.parsed_metrics %}
+                <ul class="text-xs space-y-1">
+                  {% for m in result.parsed_metrics %}
+                    <li class="bg-white/60 border border-slate-200 rounded px-2 py-1">
+                      <code class="px-1 py-0.5 rounded bg-slate-100">{{ m.kind }}</code>
+                      {{ m.value }} {{ m.unit or "" }}
+                      <span class="text-slate-500">— {{ m.raw }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <div class="text-xs text-slate-500">None detected.</div>
+              {% endif %}
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-700 mb-1">Improvements</div>
+              {% if result.improvements %}
+                <ul class="text-xs space-y-1">
+                  {% for d in result.improvements %}
+                    <li class="bg-white/60 border border-slate-200 rounded px-2 py-1">
+                      <code class="px-1 py-0.5 rounded bg-slate-100">{{ d.metric_kind }}</code>
+                      {{ d.before }}→{{ d.after }} {{ d.unit or "" }}
+                      {% if d.delta_pct %} ({{ '%.1f'|format(d.delta_pct) }}%) {% endif %}
+                      <span class="text-slate-500">— {{ d.raw }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <div class="text-xs text-slate-500">None detected.</div>
+              {% endif %}
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">Processed {{ result.pages }} page(s), {{ result.chars }} chars in {{ result.runtime_ms }} ms</p>
+        </details>
+      </section>
     {% endif %}
   </div>
+
+  <script>
+    const form = document.getElementById('analyze-form');
+    const spinner = document.getElementById('spinner');
+    form?.addEventListener('submit', () => { spinner.classList.remove('hidden'); });
+  </script>
 </body>
 </html>
+
