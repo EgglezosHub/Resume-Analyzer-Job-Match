@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="utf-8" />
   <title>Resume Analyzer & Job Match</title>
@@ -9,6 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
@@ -16,15 +17,12 @@
             ink: '#0f172a',
             card: 'rgba(255,255,255,0.75)',
           },
-          boxShadow: {
-            soft: '0 10px 25px rgba(2,6,23,0.07)',
-          }
+          boxShadow: { soft: '0 10px 25px rgba(2,6,23,0.07)' }
         }
       }
     }
   </script>
   <style>
-    /* subtle animated gradient background */
     .bg-grid {
       background:
         radial-gradient(1000px 600px at 20% -10%, rgba(99,102,241,.25), transparent 60%),
@@ -32,50 +30,44 @@
         radial-gradient(800px 500px at 50% 120%, rgba(59,130,246,.20), transparent 60%),
         linear-gradient(180deg, #f8fafc, #f1f5f9);
     }
-    .glass {
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      background: var(--card, rgba(255,255,255,0.7));
+    .dark .bg-grid {
+      background: radial-gradient(900px 500px at 110% 10%, rgba(99,102,241,.2), transparent 60%),
+                  radial-gradient(800px 500px at 50% 120%, rgba(16,185,129,.2), transparent 60%),
+                  linear-gradient(180deg, #0b1220, #0b1324);
     }
-    .chip { 
-      display:inline-flex; align-items:center; gap:.4rem;
-      padding:.25rem .55rem; border-radius:.6rem;
-      background:linear-gradient(180deg,#f8fafc,#eef2ff);
-      border:1px solid #e2e8f0; font-size:.8rem;
-    }
-    .chip-amber { background:linear-gradient(180deg,#fff7ed,#fffbeb); border-color:#fde68a; }
-    .chip-green { background:linear-gradient(180deg,#ecfdf5,#f0fdf4); border-color:#a7f3d0; }
-    .bar {
-      height: .5rem; border-radius: .5rem;
-      background: linear-gradient(90deg,#a5b4fc, #60a5fa, #34d399);
-      box-shadow: inset 0 1px 2px rgba(15,23,42,.15);
-      transition: width .6s ease;
-    }
-    .card {
-      background: var(--card, rgba(255,255,255,0.75));
-      border: 1px solid rgba(15,23,42,0.06);
-      border-radius: 1rem;
-      box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 10px 25px rgba(2,6,23,0.06);
-    }
+    .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .55rem;border-radius:.6rem;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;font-size:.8rem}
+    .dark .chip{background:linear-gradient(180deg,#0f172a,#0b1324);border-color:#1f2937;color:#e5e7eb}
+    .chip-amber{background:linear-gradient(180deg,#fff7ed,#fffbeb);border-color:#fde68a}
+    .dark .chip-amber{background:linear-gradient(180deg,#1f2937,#111827);border-color:#f59e0b;color:#fcd34d}
+    .chip-green{background:linear-gradient(180deg,#ecfdf5,#f0fdf4);border-color:#a7f3d0}
+    .dark .chip-green{background:linear-gradient(180deg,#1f2937,#111827);border-color:#10b981;color:#86efac}
+    .bar{height:.5rem;border-radius:.5rem;background:linear-gradient(90deg,#a5b4fc,#60a5fa,#34d399);box-shadow:inset 0 1px 2px rgba(15,23,42,.15);transition:width .6s ease}
+    .card{background:rgba(255,255,255,.75);border:1px solid rgba(15,23,42,.06);border-radius:1rem;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 25px rgba(2,6,23,.06)}
+    .dark .card{background:rgba(15,23,42,.5);border-color:rgba(148,163,184,.15);box-shadow:0 1px 0 rgba(2,6,23,.4) inset,0 10px 25px rgba(0,0,0,.35)}
   </style>
 </head>
-<body class="bg-grid min-h-screen text-ink">
+<body class="bg-grid min-h-screen text-ink dark:text-slate-200">
   <div class="max-w-5xl mx-auto px-5 py-8">
     <!-- Header -->
-    <header class="mb-8">
+    <header class="mb-8 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-400 shadow-soft grid place-content-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6a2 2 0 0 1 2-2h6l2 2h4a2 2 0 0 1 2 2v3h-2V8H4v10h8v2H6a2 2 0 0 1-2-2V6Z"/><path d="M20 14h-5v-2h5v2Zm-7 3h7v-2h-7v2Zm9 1h-9v2h9v-2Z"/></svg>
         </div>
         <div>
           <h1 class="text-3xl font-extrabold tracking-tight">Resume Analyzer & Job Match</h1>
-          <p class="text-slate-600">Upload a PDF resume, paste a job description, and get instant, actionable insights.</p>
+          <p class="text-slate-600 dark:text-slate-400">Upload a PDF resume, paste a job description, and get instant insights.</p>
         </div>
       </div>
+
+      <!-- Dark mode toggle -->
+      <button id="themeBtn" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 text-sm font-medium shadow-soft">
+        Toggle theme
+      </button>
     </header>
 
     {% if error %}
-      <div class="card p-4 mb-6 border border-rose-200 bg-rose-50/70 text-rose-800">
+      <div class="card p-4 mb-6 border border-rose-200 bg-rose-50/70 text-rose-800 dark:text-rose-200 dark:bg-rose-900/30 dark:border-rose-900/40">
         <div class="flex items-start gap-2">
           <svg class="h-5 w-5 mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2Zm1 15h-2v-2h2v2Zm0-4h-2V7h2v6Z"/></svg>
           <div>{{ error }}</div>
@@ -89,14 +81,14 @@
         <div>
           <label class="block text-sm font-semibold mb-2">Resume (PDF)</label>
           <input name="file" type="file" accept="application/pdf" required
-                 class="block w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 bg-white/70 border border-slate-200 rounded-lg p-2" />
-          <p class="text-xs text-slate-500 mt-2">PDF only. We ignore unsupported characters automatically.</p>
+                 class="block w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 bg-white/70 border border-slate-200 rounded-lg p-2 dark:bg-slate-900/50 dark:border-slate-700" />
+          <p class="text-xs text-slate-500 mt-2 dark:text-slate-400">PDF only. We ignore unsupported characters automatically.</p>
         </div>
 
         <div class="md:col-span-1">
           <label class="block text-sm font-semibold mb-2">Job Description</label>
           <textarea name="job_description" rows="7" required
-            class="w-full p-3 bg-white/70 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/40"
+            class="w-full p-3 bg-white/70 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-slate-900/50 dark:border-slate-700"
             placeholder="Paste the JD here (bullets/newlines are fine)…"></textarea>
         </div>
       </div>
@@ -110,64 +102,67 @@
           </svg>
           <span>Analyze</span>
         </button>
-        <span class="text-xs text-slate-500">No login needed • Runs on your uploaded text</span>
+        <span class="text-xs text-slate-500 dark:text-slate-400">No login needed • Runs on your uploaded text</span>
       </div>
     </form>
 
     {% if result %}
+      {% set ms = result.ms or {} %}
+      {% set ss = result.ss or {} %}
+      {% set so = result.so or {} %}
+
       <section class="space-y-6">
         <!-- Score Summary -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <!-- Card template -->
           <div class="card p-5">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-medium text-slate-600">Match Score</h3>
-              <span class="chip {{ 'chip-green' if result.ms.label=='Strong' else ('chip-amber' if result.ms.label=='Medium' else '') }}">
-                {{ result.ms.label }}
+              <h3 class="text-sm font-medium text-slate-600 dark:text-slate-300">Match Score</h3>
+              <span class="chip {{ 'chip-green' if ms.label=='Strong' else ('chip-amber' if ms.label=='Medium' else '') }}">
+                {{ ms.label or '—' }}
               </span>
             </div>
             <div class="mt-2 flex items-baseline gap-2">
-              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.match_score) }}</div>
-              <div class="text-xs text-slate-500">{{ result.ms.pct }}%</div>
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.match_score or 0) }}</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">{{ ms.pct or 0 }}%</div>
             </div>
-            <div class="mt-3 bg-slate-200/70 rounded">
-              <div class="bar" style="width: {{ result.ms.pct }}%"></div>
+            <div class="mt-3 bg-slate-200/70 rounded dark:bg-slate-700/60">
+              <div class="bar" style="width: {{ ms.pct or 0 }}%"></div>
             </div>
-            <p class="text-xs text-slate-500 mt-2">{{ result.ms.tip }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ ms.tip or '' }}</p>
           </div>
 
           <div class="card p-5">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-medium text-slate-600">Semantic Similarity</h3>
-              <span class="chip {{ 'chip-green' if result.ss.label=='Strong' else ('chip-amber' if result.ss.label=='Medium' else '') }}">
-                {{ result.ss.label }}
+              <h3 class="text-sm font-medium text-slate-600 dark:text-slate-300">Semantic Similarity</h3>
+              <span class="chip {{ 'chip-green' if ss.label=='Strong' else ('chip-amber' if ss.label=='Medium' else '') }}">
+                {{ ss.label or '—' }}
               </span>
             </div>
             <div class="mt-2 flex items-baseline gap-2">
-              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.semantic_similarity) }}</div>
-              <div class="text-xs text-slate-500">{{ result.ss.pct }}%</div>
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.semantic_similarity or 0) }}</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">{{ ss.pct or 0 }}%</div>
             </div>
-            <div class="mt-3 bg-slate-200/70 rounded">
-              <div class="bar" style="width: {{ result.ss.pct }}%"></div>
+            <div class="mt-3 bg-slate-200/70 rounded dark:bg-slate-700/60">
+              <div class="bar" style="width: {{ ss.pct or 0 }}%"></div>
             </div>
-            <p class="text-xs text-slate-500 mt-2">{{ result.ss.tip }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ ss.tip or '' }}</p>
           </div>
 
           <div class="card p-5">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-medium text-slate-600">Skill Overlap</h3>
-              <span class="chip {{ 'chip-green' if result.so.label=='Strong' else ('chip-amber' if result.so.label=='Medium' else '') }}">
-                {{ result.so.label }}
+              <h3 class="text-sm font-medium text-slate-600 dark:text-slate-300">Skill Overlap</h3>
+              <span class="chip {{ 'chip-green' if so.label=='Strong' else ('chip-amber' if so.label=='Medium' else '') }}">
+                {{ so.label or '—' }}
               </span>
             </div>
             <div class="mt-2 flex items-baseline gap-2">
-              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.skill_overlap) }}</div>
-              <div class="text-xs text-slate-500">{{ result.so.pct }}%</div>
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.skill_overlap or 0) }}</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">{{ so.pct or 0 }}%</div>
             </div>
-            <div class="mt-3 bg-slate-200/70 rounded">
-              <div class="bar" style="width: {{ result.so.pct }}%"></div>
+            <div class="mt-3 bg-slate-200/70 rounded dark:bg-slate-700/60">
+              <div class="bar" style="width: {{ so.pct or 0 }}%"></div>
             </div>
-            <p class="text-xs text-slate-500 mt-2">{{ result.so.tip }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ so.tip or '' }}</p>
           </div>
         </div>
 
@@ -176,7 +171,7 @@
           <div class="grid md:grid-cols-2 gap-6">
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <h3 class="text-sm font-semibold text-slate-700">Extracted from Resume</h3>
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Extracted from Resume</h3>
                 <span class="chip">count {{ result.skills | length }}</span>
               </div>
               <div class="flex flex-wrap gap-2">
@@ -187,7 +182,7 @@
             </div>
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <h3 class="text-sm font-semibold text-slate-700">JD Missing in Resume</h3>
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">JD Missing in Resume</h3>
                 <span class="chip {{ 'chip-amber' if result.missing_skills|length else '' }}">
                   {{ result.missing_skills|length }} gap{{ '' if result.missing_skills|length==1 else 's' }}
                 </span>
@@ -199,7 +194,7 @@
                   {% endfor %}
                 </div>
               {% else %}
-                <div class="text-sm text-emerald-700 bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2 inline-flex items-center gap-2">
+                <div class="text-sm text-emerald-700 bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2 inline-flex items-center gap-2 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800">
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4 1.5 1.5L11 16l-3.5-3.5L9 12z"/><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2z" opacity=".15"/></svg>
                   Great—no explicit JD gaps detected!
                 </div>
@@ -210,7 +205,7 @@
 
         <!-- Recommendations -->
         <div class="card p-5">
-          <h3 class="text-lg font-semibold mb-2">Recommendations</h3>
+          <h3 class="text-lg font-semibold mb-2 dark:text-slate-100">Recommendations</h3>
           {% if result.recommendations and result.recommendations|length %}
             <ul class="space-y-2">
               {% for tip in result.recommendations %}
@@ -221,58 +216,70 @@
               {% endfor %}
             </ul>
           {% else %}
-            <div class="text-sm text-slate-600">No extra recommendations—your resume aligns well with this JD.</div>
+            <div class="text-sm text-slate-600 dark:text-slate-400">No extra recommendations—your resume aligns well with this JD.</div>
           {% endif %}
         </div>
 
         <!-- Advanced -->
         <details class="card p-5 group">
-          <summary class="cursor-pointer text-sm font-semibold text-slate-700 select-none">Advanced details (parsed metrics & improvements)</summary>
+          <summary class="cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-200 select-none">Advanced details (parsed metrics & improvements)</summary>
           <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <div class="text-sm font-medium text-slate-700 mb-1">Parsed Metrics</div>
+              <div class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Parsed Metrics</div>
               {% if result.parsed_metrics %}
                 <ul class="text-xs space-y-1">
                   {% for m in result.parsed_metrics %}
-                    <li class="bg-white/60 border border-slate-200 rounded px-2 py-1">
-                      <code class="px-1 py-0.5 rounded bg-slate-100">{{ m.kind }}</code>
+                    <li class="bg-white/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded px-2 py-1">
+                      <code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800">{{ m.kind }}</code>
                       {{ m.value }} {{ m.unit or "" }}
-                      <span class="text-slate-500">— {{ m.raw }}</span>
+                      <span class="text-slate-500 dark:text-slate-400">— {{ m.raw }}</span>
                     </li>
                   {% endfor %}
                 </ul>
               {% else %}
-                <div class="text-xs text-slate-500">None detected.</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">None detected.</div>
               {% endif %}
             </div>
             <div>
-              <div class="text-sm font-medium text-slate-700 mb-1">Improvements</div>
+              <div class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Improvements</div>
               {% if result.improvements %}
                 <ul class="text-xs space-y-1">
                   {% for d in result.improvements %}
-                    <li class="bg-white/60 border border-slate-200 rounded px-2 py-1">
-                      <code class="px-1 py-0.5 rounded bg-slate-100">{{ d.metric_kind }}</code>
+                    <li class="bg-white/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded px-2 py-1">
+                      <code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800">{{ d.metric_kind }}</code>
                       {{ d.before }}→{{ d.after }} {{ d.unit or "" }}
                       {% if d.delta_pct %} ({{ '%.1f'|format(d.delta_pct) }}%) {% endif %}
-                      <span class="text-slate-500">— {{ d.raw }}</span>
+                      <span class="text-slate-500 dark:text-slate-400">— {{ d.raw }}</span>
                     </li>
                   {% endfor %}
                 </ul>
               {% else %}
-                <div class="text-xs text-slate-500">None detected.</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">None detected.</div>
               {% endif %}
             </div>
           </div>
-          <p class="text-xs text-slate-500 mt-3">Processed {{ result.pages }} page(s), {{ result.chars }} chars in {{ result.runtime_ms }} ms</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">Processed {{ result.pages }} page(s), {{ result.chars }} chars in {{ result.runtime_ms }} ms</p>
         </details>
       </section>
     {% endif %}
   </div>
 
   <script>
+    // Spinner on submit
     const form = document.getElementById('analyze-form');
     const spinner = document.getElementById('spinner');
     form?.addEventListener('submit', () => { spinner.classList.remove('hidden'); });
+
+    // Dark mode toggle (persisted)
+    const root = document.documentElement;
+    const btn = document.getElementById('themeBtn');
+    const KEY = 'resume_ui_theme';
+    const saved = localStorage.getItem(KEY);
+    if (saved === 'dark') root.classList.add('dark');
+    btn?.addEventListener('click', () => {
+      root.classList.toggle('dark');
+      localStorage.setItem(KEY, root.classList.contains('dark') ? 'dark' : 'light');
+    });
   </script>
 </body>
 </html>
