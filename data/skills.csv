@@ -1,28 +1,264 @@
 skill,aliases
-docker,docker compose,compose,doccer
-linux,gnu/linux
-bash,shell,sh
-redis,cache,nosql
-postgresql,postgres,psql
-mysql,my-sql
-sql,structured query language
-rest api,rest,restful,api,http api
-nginx,engine x,http server
-wildfly,jboss
-lighttpd,lighttp
-git,version control
-jira,issue tracker
-jenkins,ci/cd,cicd
-bamboo,ci server
-pytest,unit testing,tests
-junit,unit tests
-c++,cpp
-c,c language
-python,py
-socket programming,sockets,tcp,udp,network sockets
-communication protocols,protocols,tcp/ip,http,grpc,rpc
-http server,web server,reverse proxy
-github,gh
-github actions,ci,ci pipeline
-docker compose,compose
-kubernetes,k8s
+c,c
+c++,c++,cpp
+c#,c#,c-sharp
+java,java,jdk,jre
+kotlin,kotlin
+scala,scala
+groovy,groovy
+go,go,golang
+rust,rust
+python,python,py
+ruby,ruby,rails ruby
+php,php
+typescript,typescript,ts
+javascript,javascript,js,ecmascript
+node.js,node.js,node,expressjs,express
+deno,deno
+bun,bun
+spring boot,spring boot,spring-boot,spring framework,spring
+quarkus,quarkus
+micronaut,micronaut
+jakarta ee,jakarta,j2ee,java ee
+hibernate,hibernate,jpa
+react,react,react.js,reactjs,next.js,nextjs
+vue,vue,vue.js,nuxt,nuxt.js
+angular,angular,angularjs
+svelte,svelte,sveltekit
+swift,swift
+objective-c,objective-c,obj-c
+android,android,android sdk,android studio
+ios,ios,swiftui,uikit
+flutter,flutter,dart
+react native,react native,react-native
+electron,electron
+tauri,tauri
+django,django,django rest framework,drf
+flask,flask
+fastapi,fastapi
+pyramid,pyramid
+rails,rails,ruby on rails
+laravel,laravel
+symfony,symfony
+asp.net,asp.net,aspnet,asp.net core
+next.js,next.js,nextjs
+nuxt,nuxt,nuxt.js
+remix,remix
+phoenix,phoenix,elixir phoenix
+elixir,elixir
+erlang,erlang
+grpc,grpc
+graphql,graphql,apollo
+rest api,rest api,restful api,http api,rest
+soap,soap
+websocket,websocket,ws
+socket programming,socket programming,sockets,tcp,udp,network sockets
+communication protocols,protocols,tcp/ip,grpc,rpc,http
+http server,http server,nginx,apache httpd
+nginx,nginx
+apache,apache,apache httpd
+tomcat,tomcat
+wildfly,wildfly,jboss
+jetty,jetty
+varnish,varnish
+aws,aws,amazon web services,ec2,lambda,ecs,eks,s3,iam,cloudwatch,cloudformation,alb,elb,rds,dynamodb,athena,glue,emr,efs,route 53,route53,opensearch
+azure,azure,aks,app service,functions,cosmos db,blob storage,azure devops
+gcp,gcp,google cloud,gae,gke,cloud run,cloud functions,bigquery,datastore,spanner,cloud storage,cloud build
+terraform,terraform,iac,hashicorp terraform,hcl
+pulumi,pulumi
+cloudformation,cloudformation
+ansible,ansible
+chef,chef
+puppet,puppet
+docker,docker,docker compose,compose,container
+podman,podman
+kubernetes,kubernetes,k8s,kubectl,helm
+helm,helm
+argo cd,argo,argo cd,argocd
+nomad,nomad
+openstack,openstack
+linux,linux,gnu/linux
+bash,bash,shell,sh
+zsh,zsh
+powershell,powershell
+windows server,windows server
+macos,macos,osx
+postgresql,postgresql,postgres,psql
+mysql,mysql
+mariadb,mariadb
+sqlite,sqlite
+sql,sql
+oracle,oracle,pl/sql,plsql
+mssql,sql server,mssql
+dynamodb,dynamodb
+mongodb,mongodb,mongo
+redis,redis
+memcached,memcached
+cassandra,cassandra
+couchdb,couchdb
+couchbase,couchbase
+cosmos db,cosmos db,cosmosdb
+elasticsearch,elasticsearch,elastic,es,elk,opensearch
+kibana,kibana
+logstash,logstash
+opensearch,opensearch
+solr,solr
+neo4j,neo4j,graph db
+janusgraph,janusgraph
+timescaledb,timescaledb
+influxdb,influxdb
+clickhouse,clickhouse
+snowflake,snowflake
+bigquery,bigquery
+redshift,redshift
+sparksql,sparksql
+hive,hive
+hadoop,hadoop,hdfs,yarn,mapreduce
+spark,spark,pyspark
+flink,flink
+kafka,kafka,apache kafka
+rabbitmq,rabbitmq
+activemq,activemq
+sqs,sqs
+sns,sns
+pub/sub,pubsub,google pubsub
+nats,nats
+zeromq,zeromq,0mq
+etcd,etcd
+zookeeper,zookeeper
+airflow,airflow
+prefect,prefect
+dagster,dagster
+mlflow,mlflow
+ray,ray
+pytorch,pytorch,torch
+tensorflow,tensorflow,tf,keras
+scikit-learn,scikit-learn,sklearn
+xgboost,xgboost
+lightgbm,lightgbm,lgbm
+spacy,spacy
+transformers,transformers,huggingface,hf
+sentence-transformers,sentence-transformers,sbert
+opencv,opencv,cv2
+numpy,numpy
+pandas,pandas
+polars,polars
+matplotlib,matplotlib
+seaborn,seaborn
+plotly,plotly
+fastai,fastai
+langchain,langchain
+llamaindex,llamaindex,gpt index
+gradio,gradio
+streamlit,streamlit
+fastapi users,fastapi users,fastapi-users
+pytest,pytest,unit test
+unittest,unittest
+junit,junit
+testng,testng
+jest,jest
+mocha,mocha
+jasmine,jasmine
+cypress,cypress
+playwright,playwright
+selenium,selenium
+locust,locust
+k6,k6
+gatling,gatling
+postman,postman
+newman,newman
+artillery,artillery
+jmeter,jmeter
+docker compose,compose,docker-compose
+github actions,github actions,actions,gh actions
+gitlab ci,gitlab ci,gitlab-ci,gitlab pipelines
+jenkins,jenkins
+travis ci,travis,travis ci
+circleci,circleci
+bamboo,bamboo
+argocd,argocd,argo cd
+sonarqube,sonarqube
+nexus,nexus3,sonatype nexus
+harbor,harbor
+prometheus,prometheus
+grafana,grafana
+loki,loki
+tempo,tempo
+jaeger,jaeger
+opentelemetry,opentelemetry,otel
+datadog,datadog
+new relic,new relic
+splunk,splunk
+elastic apm,elastic apm
+sentry,sentry
+rollbar,rollbar
+papertrail,papertrail
+zipkin,zipkin
+logrocket,logrocket
+wiremock,wiremock
+mockito,mockito
+msw,msw
+vite,vite
+webpack,webpack
+rollup,rollup
+parcel,parcel
+babel,babel
+esbuild,esbuild
+maven,maven
+gradle,gradle
+ant,ant
+npm,npm
+pnpm,pnpm
+yarn,yarn
+poetry,poetry
+pipenv,pipenv
+make,make,makefile
+cmake,cmake
+ninja,ninja build
+scons,scons
+oauth2,oauth,openid connect,oidc
+jwt,jwt,json web token
+saml,saml
+ldap,ldap
+ssh,ssh
+tls,tls,ssl
+grpc-web,grpc web
+webauthn,webauthn
+sam,sam,serverless application model
+serverless,serverless,serverless framework
+twelve-factor,twelve factor,12-factor,12 factor
+ddd,ddd,domain-driven design,domain driven design
+event sourcing,event sourcing
+cqrs,cqrs
+microservices,microservice,micro-services
+monolith,monolith
+monorepo,monorepo
+git,git,git cli
+github,github
+gitlab,gitlab
+bitbucket,bitbucket
+jira,jira
+youtrack,youtrack
+trello,trello
+confluence,confluence
+notion,notion
+figma,figma
+swagger,swagger,openapi,open api
+openapi,openapi
+postgrest,postgrest
+prisma,prisma
+typeorm,typeorm
+sequelize,sequelize
+sqlalchemy,sqlalchemy
+hibernate validator,hibernate validator
+mapstruct,mapstruct
+flyway,flyway
+liquibase,liquibase
+kong,kong,api gateway
+tyk,tyk
+apigee,apigee
+istio,istio
+linkerd,linkerd
+consul,consul
+vault,vault,hashicorp vault
+keycloak,keycloak

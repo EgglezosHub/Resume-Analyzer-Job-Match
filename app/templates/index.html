@@ -56,10 +56,10 @@
         </div>
         <div>
           <h1 class="text-3xl font-extrabold tracking-tight">DevMatch</h1>
-            <p class="text-slate-600 dark:text-slate-400">
-              Tech-focused resume & JD analyzer for <span class="font-medium">software engineering roles</span>. 
-              Upload a PDF and paste a JD to see coverage, gaps, and actionable suggestions.
-            </p>
+          <p class="text-slate-600 dark:text-slate-400">
+            Tech-focused resume & JD analyzer for <span class="font-medium">software engineering roles</span>.
+            Upload a PDF and paste a JD to see coverage, gaps, and actionable suggestions.
+          </p>
         </div>
       </div>
 
@@ -183,6 +183,8 @@
                 {% endfor %}
               </div>
             </div>
+
+            <!-- UPDATED PANEL -->
             <div>
               <div class="flex items-center gap-2 mb-2">
                 <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">JD Missing in Resume</h3>
@@ -190,19 +192,33 @@
                   {{ result.missing_skills|length }} gap{{ '' if result.missing_skills|length==1 else 's' }}
                 </span>
               </div>
-              {% if result.missing_skills %}
+
+              {% set coverage = result.skill_overlap or 0 %}
+              {% set jd_count = result.jd_skills | length %}
+
+              {% if jd_count == 0 %}
+                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                  JD contained no recognizable tech keywords. Scores rely more on semantic similarity.
+                </div>
+              {% elif result.missing_skills and result.missing_skills|length > 0 %}
                 <div class="flex flex-wrap gap-2">
                   {% for s in result.missing_skills %}
                     <span class="chip chip-amber">{{ s }}</span>
                   {% endfor %}
                 </div>
+              {% elif coverage < 1.0 %}
+                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                  No explicit gaps from known keywords, but coverage is {{ (coverage*100)|round(0) }}%.
+                  The JD may reference frameworks/tools not fully recognized—review for items like cloud, IaC, or specific stacks.
+                </div>
               {% else %}
                 <div class="text-sm text-emerald-700 bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2 inline-flex items-center gap-2 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800">
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4 1.5 1.5L11 16l-3.5-3.5L9 12z"/><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2z" opacity=".15"/></svg>
-                  Great—no explicit JD gaps detected!
+                  Great—no JD gaps detected and 100% coverage!
                 </div>
               {% endif %}
             </div>
+            <!-- /UPDATED PANEL -->
           </div>
         </div>
 
