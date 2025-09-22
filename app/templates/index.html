@@ -119,22 +119,31 @@
           <div class="grid md:grid-cols-3 gap-4">
             <div>
               <div class="text-xs font-semibold mb-2">JD skills ({{ result.jd_skills|length }})</div>
-              <div class="flex flex-wrap gap-2">{% for s in result.jd_skills %}<span class="chip">{{ s }}</span>{% endfor %}</div>
+              <div class="flex flex-wrap gap-2">
+                {% for s in result.jd_skills %}
+                  <span class="chip">{{ s }}</span>
+                {% endfor %}
+              </div>
             </div>
             <div>
               <div class="text-xs font-semibold mb-2">Resume skills ({{ result.resume_skills|length }})</div>
-              <div class="flex flex-wrap gap-2">{% for s in result.resume_skills %}<span class="chip">{{ s }}</span>{% endfor %}</div>
+              <div class="flex flex-wrap gap-2">
+                {% for s in result.resume_skills %}
+                  <span class="chip">{{ s }}</span>
+                {% endfor %}
+              </div>
             </div>
             <div>
-              <div class="text-xs font-semibold mb-2">Overlap ({{ (result.resume_skills|intersect(result.jd_skills))|length if result.resume_skills and result.jd_skills else 0 }})</div>
+              <div class="text-xs font-semibold mb-2">Overlap ({{ result.overlap_skills|length }})</div>
               <div class="flex flex-wrap gap-2">
-                {% for s in result.resume_skills if s in result.jd_skills %}
+                {% for s in result.overlap_skills %}
                   <span class="chip chip-green">{{ s }}</span>
                 {% endfor %}
               </div>
             </div>
           </div>
         </div>
+
 
         <!-- Missing panel with stricter logic -->
         <div class="card p-5">

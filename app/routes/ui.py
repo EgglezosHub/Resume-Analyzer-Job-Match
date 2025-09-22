@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
-from app.db.models import Resume, Job, Match
+from app.db.models import Resume, Job
 from app.utils.pdf import extract_pdf_text
 from app.utils.pdf_report import generate_report_pdf
 from app.services.analyze_service import analyze_resume
@@ -35,6 +35,43 @@ def _bucket(score: float):
         return ("Medium", pct, "bg-amber-500", "text-amber-700", "Relevant but gaps remain")
     return ("Strong", pct, "bg-emerald-500", "text-emerald-700", "Good alignment")
 
+def _build_result_payload(analysis: dict, matched: dict, pages: int, chars: int) -> dict:
+    jd_sk = matched.get("jd_skills") or []
+    rs_sk = analysis.get("skills") or matched.get("resume_skills") or []
+    overlap = sorted([s for s in rs_sk if s in set(jd_sk)])
+
+    ms_label, ms_pct, *_ = _bucket(matched.get("match_score", 0.0))
+    ss_label, ss_pct, *_ = _bucket(matched.get("semantic_similarity", 0.0))
+    so_label, so_pct, *_ = _bucket(matched.get("skill_overlap", 0.0))
+
+    return {
+        "resume_id": analysis.get("resume_id"),
+        "tokens": analysis.get("tokens", 0),
+        "skills": rs_sk,
+
+        "match_score": float(matched.get("match_score", 0.0)),
+        "semantic_similarity": float(matched.get("semantic_similarity", 0.0)),
+        "skill_overlap": float(matched.get("skill_overlap", 0.0)),
+
+        "ms": {"label": ms_label, "pct": ms_pct},
+        "ss": {"label": ss_label, "pct": ss_pct},
+        "so": {"label": so_label, "pct": so_pct},
+
+        "jd_skills": jd_sk,
+        "resume_skills": rs_sk,
+        "overlap_skills": overlap,
+
+        "missing_skills": matched.get("missing_skills", []),
+        "recommendations": matched.get("recommendations", []),
+
+        "parsed_metrics": matched.get("parsed_metrics", []),
+        "improvements": matched.get("improvements", []),
+
+        "pages": pages,
+        "chars": chars,
+        "runtime_ms": matched.get("runtime_ms", 0),
+    }
+
 # ---------- Landing + Analyze + Demo ----------
 
 @router.get("/", response_class=HTMLResponse)
@@ -43,11 +80,13 @@ async def landing(request: Request):
 
 @router.get("/analyze", response_class=HTMLResponse)
 async def analyze_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "result": None, "error": None, "read_only": False, "share_url": None})
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "result": None, "error": None, "read_only": False, "share_url": None},
+    )
 
 @router.get("/demo", response_class=HTMLResponse)
 async def demo(request: Request, db: Session = Depends(get_db)):
-    # Minimal built-in demo (no file upload)
     demo_resume = """
     Projects: Built a FastAPI backend with PostgreSQL and Docker; added Redis cache and GitHub Actions CI.
     Implemented REST APIs (auth, pagination). Deployed to AWS (EC2) via Terraform. Wrote tests with pytest.
@@ -62,92 +101,53 @@ async def demo(request: Request, db: Session = Depends(get_db)):
     analysis = analyze_resume(db, resume)
     matched = match_resume_job(db, resume, job)
 
-    ms_label, ms_pct, *_ = _bucket(matched.get("match_score", 0.0))
-    ss_label, ss_pct, *_ = _bucket(matched.get("semantic_similarity", 0.0))
-    so_label, so_pct, *_ = _bucket(matched.get("skill_overlap", 0.0))
+    result = _build_result_payload(analysis, matched, pages=1, chars=len(demo_resume))
 
-    result = {
-        "resume_id": analysis.get("resume_id"),
-        "tokens": analysis.get("tokens", 0),
-        "skills": analysis.get("skills", []),
-
-        "match_score": float(matched.get("match_score", 0.0)),
-        "semantic_similarity": float(matched.get("semantic_similarity", 0.0)),
-        "skill_overlap": float(matched.get("skill_overlap", 0.0)),
-
-        "ms": {"label": ms_label, "pct": ms_pct},
-        "ss": {"label": ss_label, "pct": ss_pct},
-        "so": {"label": so_label, "pct": so_pct},
-
-        "missing_skills": matched.get("missing_skills", []),
-        "jd_skills": matched.get("jd_skills", []),
-        "resume_skills": matched.get("resume_skills", []),
-
-        "recommendations": matched.get("recommendations", []),
-        "parsed_metrics": matched.get("parsed_metrics", []),
-        "improvements": matched.get("improvements", []),
-
-        "pages": 1, "chars": len(demo_resume), "runtime_ms": matched.get("runtime_ms", 0),
-    }
-
-    # create shareable report immediately
     rpt = create_report(db, payload=result, resume_id=resume.id, job_id=job.id, match_id=None)
     share_url = f"/r/{rpt.slug}"
-    return templates.TemplateResponse("index.html", {"request": request, "result": result, "error": None, "read_only": False, "share_url": share_url})
+
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "result": result, "error": None, "read_only": False, "share_url": share_url},
+    )
 
 @router.post("/ui-match", response_class=HTMLResponse)
-async def ui_match(request: Request,
-                   file: UploadFile = File(...),
-                   job_description: str = Form(...),
-                   db: Session = Depends(get_db)):
+async def ui_match(
+    request: Request,
+    file: UploadFile = File(...),
+    job_description: str = Form(...),
+    db: Session = Depends(get_db),
+):
     if file.content_type != "application/pdf":
-        return templates.TemplateResponse("index.html", {"request": request, "result": None, "error": "Please upload a PDF file.", "read_only": False, "share_url": None})
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "result": None, "error": "Please upload a PDF file.", "read_only": False, "share_url": None},
+        )
 
     text, pages, chars = extract_pdf_text(file.file)
-    text = _clean_text(text); jd_text = _clean_text(job_description)
+    text = _clean_text(text)
+    jd_text = _clean_text(job_description)
 
     if len(text) < 40 or len(jd_text) < 40:
-        return templates.TemplateResponse("index.html", {"request": request, "result": None, "error": "Please provide a valid PDF and a sufficiently detailed JD.", "read_only": False, "share_url": None})
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "result": None, "error": "Please provide a valid PDF and a sufficiently detailed JD.", "read_only": False, "share_url": None},
+        )
 
     resume = Resume(filename=file.filename, text=text); db.add(resume); db.commit(); db.refresh(resume)
     job = Job(title="Job Description", description=jd_text); db.add(job); db.commit(); db.refresh(job)
 
     analysis = analyze_resume(db, resume)
     matched = match_resume_job(db, resume, job)
+    result = _build_result_payload(analysis, matched, pages=pages, chars=chars)
 
-    ms_label, ms_pct, *_ = _bucket(matched.get("match_score", 0.0))
-    ss_label, ss_pct, *_ = _bucket(matched.get("semantic_similarity", 0.0))
-    so_label, so_pct, *_ = _bucket(matched.get("skill_overlap", 0.0))
-
-    result = {
-        "resume_id": analysis.get("resume_id"),
-        "tokens": analysis.get("tokens", 0),
-        "skills": analysis.get("skills", []),
-
-        "match_score": float(matched.get("match_score", 0.0)),
-        "semantic_similarity": float(matched.get("semantic_similarity", 0.0)),
-        "skill_overlap": float(matched.get("skill_overlap", 0.0)),
-
-        "ms": {"label": ms_label, "pct": ms_pct},
-        "ss": {"label": ss_label, "pct": ss_pct},
-        "so": {"label": so_label, "pct": so_pct},
-
-        "missing_skills": matched.get("missing_skills", []),
-        "jd_skills": matched.get("jd_skills", []),
-        "resume_skills": matched.get("resume_skills", []),
-
-        "recommendations": matched.get("recommendations", []),
-        "parsed_metrics": matched.get("parsed_metrics", []),
-        "improvements": matched.get("improvements", []),
-
-        "pages": pages, "chars": chars, "runtime_ms": matched.get("runtime_ms", 0),
-    }
-
-    # Save shareable report
     rpt = create_report(db, payload=result, resume_id=resume.id, job_id=job.id, match_id=None)
     share_url = f"/r/{rpt.slug}"
 
-    return templates.TemplateResponse("index.html", {"request": request, "result": result, "error": None, "read_only": False, "share_url": share_url})
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "result": result, "error": None, "read_only": False, "share_url": share_url},
+    )
 
 # ---------- Public read-only report + PDF ----------
 
@@ -156,7 +156,10 @@ async def public_report(slug: str, request: Request, db: Session = Depends(get_d
     rpt = get_report(db, slug)
     if not rpt:
         raise HTTPException(status_code=404, detail="Report not found")
-    return templates.TemplateResponse("index.html", {"request": request, "result": rpt.payload, "error": None, "read_only": True, "share_url": f"/r/{slug}"})
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "result": rpt.payload, "error": None, "read_only": True, "share_url": f"/r/{slug}"},
+    )
 
 @router.get("/r/{slug}.pdf")
 async def public_report_pdf(slug: str, db: Session = Depends(get_db)):

@@ -4,7 +4,12 @@ from app.core.config import settings
 from app.core.security import verify_api_key
 from app.db.session import Base, engine
 from app.routes import health, resumes, jobs, analyze, match
-from app.routes import ui  # <-- add this
+from app.routes import ui  
+from app.db.session import engine
+from app.db.models import Base 
+
+Base.metadata.create_all(bind=engine)
+
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI(title=settings.api_title, version=settings.api_version)

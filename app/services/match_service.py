@@ -47,11 +47,12 @@ def _jd_coverage(r_sk: Set[str], j_sk: Set[str]) -> float:
 def _smart_tips_v2(resume_sk: Set[str], jd_sk: Set[str], resume_text: str, jd_text: str) -> List[str]:
     tips: List[str] = []
 
-    # Specific gaps (JD skill missing in resume)
+    # Specific gaps (JD skill missing in resume) - plain text (no markdown **)
     missing = sorted(list(jd_sk - resume_sk))
     for g in missing:
-        # a generic per-skill hint:
-        tips.append(f"Add or highlight **{g}** experience if relevant to this role.")
+        # normalize spacing/case a bit
+        skill = g.strip()
+        tips.append(f"Add or highlight {skill} experience if relevant to this role.")
 
     # Content-aware groups (cloud/IaC/frameworks/DevOps)
     for grp in TIP_GROUPS.values():
@@ -63,9 +64,10 @@ def _smart_tips_v2(resume_sk: Set[str], jd_sk: Set[str], resume_text: str, jd_te
     if any(k in jd_lower for k in JD_PERF_KW) and not has_quant_metrics(resume_text):
         tips.append("Quantify performance (req/s, ops/sec, p95 ms, error %, users) in at least one project.")
 
-    # de-dupe
+    # de-dupe while preserving order
     seen = set(); uniq=[]
     for t in tips:
+        t = " ".join(t.split())  # collapse double spaces
         if t not in seen:
             seen.add(t); uniq.append(t)
     return uniq

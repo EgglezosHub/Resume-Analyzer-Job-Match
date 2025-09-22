@@ -1,6 +1,37 @@
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtualenv
 .venv/
+env/
+venv/
+
+# Environments
+*.env
 .env
+
+# SQLite / local DB
+*.sqlite
+*.db
+
+# Logs
+*.log
+
+# Byte-compiled / cache
+*.pkl
+*.cache/
+*.mypy_cache/
+*.pytest_cache/
+*.ruff_cache/
+
+# Build / dist
+dist/
+build/
+
+# IDE
 .idea/
-.pytest_cache/
-.mypy_cache/
+.vscode/
