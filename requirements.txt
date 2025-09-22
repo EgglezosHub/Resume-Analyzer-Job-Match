@@ -19,3 +19,5 @@ httpx
 python-multipart
 jinja2
 rapidfuzz
+reportlab>=4.2.0
+

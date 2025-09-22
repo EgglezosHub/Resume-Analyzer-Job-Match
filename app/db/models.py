@@ -1,8 +1,10 @@
 # app/db/models.py
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime
+from sqlalchemy import Column, Integer, String, Text, Float, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.types import JSON  # portable JSON type across dialects
 from app.db.session import Base
+from sqlalchemy.orm import relationship
+
 
 
 class Resume(Base):
@@ -44,3 +46,19 @@ class Match(Base):
     recommendations = Column(JSON, nullable=True)     # list[str]
     runtime_ms = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Report(Base):
+    __tablename__ = "reports"
+    id = Column(Integer, primary_key=True, index=True)
+    slug = Column(String(16), unique=True, index=True, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    # store references for traceability (optional)
+    resume_id = Column(Integer, ForeignKey("resumes.id"), nullable=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=True)
+    match_id = Column(Integer, ForeignKey("matches.id"), nullable=True)
+
+    # frozen result payload you render publicly
+    payload = Column(JSON, nullable=False, default={})
+
