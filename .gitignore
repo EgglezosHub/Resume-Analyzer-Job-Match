@@ -1,37 +1,25 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-
-# Virtualenv
+# Python / env
 .venv/
-env/
 venv/
+__pycache__/
+*.pyc
 
-# Environments
-*.env
-.env
-
-# SQLite / local DB
-*.sqlite
+# Local DB / envs / keys
+dev.db
 *.db
+.env
+.env.local
+secrets.json
+keys/
+id_rsa
+id_rsa.pub
 
-# Logs
-*.log
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
 
-# Byte-compiled / cache
-*.pkl
-*.cache/
-*.mypy_cache/
-*.pytest_cache/
-*.ruff_cache/
-
-# Build / dist
+# Build / logs
 dist/
 build/
-
-# IDE
-.idea/
-.vscode/
+*.log
