@@ -22,18 +22,61 @@
     .bar{height:.5rem;border-radius:.5rem;background:linear-gradient(90deg,#a5b4fc,#60a5fa,#34d399)}
     .card{background:rgba(255,255,255,.75);border:1px solid rgba(15,23,42,.06);border-radius:1rem}
     .dark .card{background:rgba(15,23,42,.5);border-color:rgba(148,163,184,.15)}
+
+    /* --- Loading overlay + top progress bar --- */
+    .loading-overlay{
+      position:fixed; inset:0; background:rgba(15,23,42,0.35);
+      backdrop-filter:saturate(110%) blur(2px);
+      display:none; align-items:center; justify-content:center; z-index:60;
+    }
+    .loading-overlay.show{ display:flex; }
+    .loading-card{
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(15,23,42,.06);
+      color:#0f172a; border-radius:12px; padding:14px 16px; font-weight:600;
+      box-shadow:0 10px 25px rgba(2,6,23,0.1);
+    }
+    .dark .loading-card{ background:rgba(15,23,42,.9); color:#e5e7eb; border-color:#334155; }
+
+    .top-progress{
+      position:fixed; left:0; top:0; height:3px; width:0%;
+      background:linear-gradient(90deg,#6366f1,#22c55e,#60a5fa);
+      z-index:70; box-shadow:0 0 12px rgba(99,102,241,.5);
+      transition:width .25s ease;
+    }
+    .top-progress.hidden{ display:none; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200">
+  <!-- Top indeterminate progress bar -->
+  <div id="topProgress" class="top-progress hidden"></div>
+  <!-- Subtle centered overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-card">
+      Analyzing… this can take a few seconds.
+    </div>
+  </div>
+
   <div class="max-w-5xl mx-auto px-5 py-8">
     <header class="mb-6 flex items-center justify-between">
       <a href="/" class="text-2xl font-extrabold">DevMatch</a>
       <div class="flex items-center gap-2">
         {% if result and share_url %}
-          <button id="copyLink" class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">Copy link</button>
-          <a href="{{ share_url }}.pdf" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Download PDF</a>
+          <!-- share_url is ABSOLUTE, passed from the backend -->
+          <button id="copyLink"
+                  type="button"
+                  data-share-url="{{ share_url }}"
+                  class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">
+            Copy share link
+          </button>
+          <a href="{{ share_url }}.pdf"
+             class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">
+            Download report (PDF)
+          </a>
         {% endif %}
-        <button id="themeBtn" class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">Theme</button>
+        <button id="themeBtn" class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">
+          Theme
+        </button>
       </div>
     </header>
 
@@ -63,7 +106,7 @@
         <div class="mt-6">
           <button id="submit-btn" type="submit"
                   class="px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold">Analyze</button>
-          <a class="ml-3 text-sm text-slate-600 dark:text-slate-400" href="/demo">or try demo →</a>
+          <a id="demoLink" class="ml-3 text-sm text-slate-600 dark:text-slate-400" href="/demo">or try demo →</a>
         </div>
       </form>
     {% endif %}
@@ -144,7 +187,6 @@
           </div>
         </div>
 
-
         <!-- Missing panel with stricter logic -->
         <div class="card p-5">
           <div class="grid md:grid-cols-2 gap-6">
@@ -153,23 +195,40 @@
                 <h3 class="text-sm font-semibold">Extracted from Resume</h3>
                 <span class="chip">count {{ result.skills | length }}</span>
               </div>
-              <div class="flex flex-wrap gap-2">{% for s in result.skills %}<span class="chip">{{ s }}</span>{% endfor %}</div>
+              <div class="flex flex-wrap gap-2">
+                {% for s in result.skills %}
+                  <span class="chip">{{ s }}</span>
+                {% endfor %}
+              </div>
             </div>
             <div>
               <div class="flex items-center gap-2 mb-2">
                 <h3 class="text-sm font-semibold">JD Missing in Resume</h3>
-                <span class="chip {{ 'chip-amber' if result.missing_skills|length else '' }}">{{ result.missing_skills|length }} gap{{ '' if result.missing_skills|length==1 else 's' }}</span>
+                <span class="chip {{ 'chip-amber' if result.missing_skills|length else '' }}">
+                  {{ result.missing_skills|length }} gap{{ '' if result.missing_skills|length==1 else 's' }}
+                </span>
               </div>
               {% set coverage = result.skill_overlap or 0 %}
               {% set jd_count = result.jd_skills | length %}
               {% if jd_count == 0 %}
-                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">JD contained no recognizable tech keywords. Scores rely more on semantic similarity.</div>
+                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                  JD contained no recognizable tech keywords. Scores rely more on semantic similarity.
+                </div>
               {% elif result.missing_skills and result.missing_skills|length > 0 %}
-                <div class="flex flex-wrap gap-2">{% for s in result.missing_skills %}<span class="chip chip-amber">{{ s }}</span>{% endfor %}</div>
+                <div class="flex flex-wrap gap-2">
+                  {% for s in result.missing_skills %}
+                    <span class="chip chip-amber">{{ s }}</span>
+                  {% endfor %}
+                </div>
               {% elif coverage < 1.0 %}
-                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">No explicit gaps from known keywords, but coverage is {{ (coverage*100)|round(0) }}%. The JD may reference frameworks/tools not fully recognized—review for items like cloud, IaC, or specific stacks.</div>
+                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                  No explicit gaps from known keywords, but coverage is {{ (coverage*100)|round(0) }}%.
+                  The JD may reference frameworks/tools not fully recognized—review for items like cloud, IaC, or specific stacks.
+                </div>
               {% else %}
-                <div class="text-sm text-emerald-700 bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2">Great—no JD gaps detected and 100% coverage!</div>
+                <div class="text-sm text-emerald-700 bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2">
+                  Great—no JD gaps detected and 100% coverage!
+                </div>
               {% endif %}
             </div>
           </div>
@@ -180,17 +239,23 @@
           <h3 class="text-lg font-semibold mb-2">Recommendations</h3>
           {% if result.recommendations and result.recommendations|length %}
             <ul class="space-y-2">
-              {% for tip in result.recommendations %}<li class="text-sm">• {{ tip }}</li>{% endfor %}
+              {% for tip in result.recommendations %}
+                <li class="text-sm">• {{ tip }}</li>
+              {% endfor %}
             </ul>
           {% else %}
-            <div class="text-sm text-slate-600 dark:text-slate-400">No extra recommendations—your resume aligns well with this JD.</div>
+            <div class="text-sm text-slate-600 dark:text-slate-400">
+              No extra recommendations—your resume aligns well with this JD.
+            </div>
           {% endif %}
         </div>
 
         <!-- Advanced -->
         <details class="card p-5 group">
           <summary class="cursor-pointer text-sm font-semibold">Advanced details (parsed metrics & improvements)</summary>
-          <p class="text-xs text-slate-500 mt-3">Processed {{ result.pages }} page(s), {{ result.chars }} chars in {{ result.runtime_ms }} ms</p>
+          <p class="text-xs text-slate-500 mt-3">
+            Processed {{ result.pages }} page(s), {{ result.chars }} chars in {{ result.runtime_ms }} ms
+          </p>
         </details>
       </section>
     {% endif %}
@@ -200,12 +265,80 @@
     // Theme toggle
     const root = document.documentElement, KEY='resume_ui_theme';
     if (localStorage.getItem(KEY)==='dark') root.classList.add('dark');
-    document.getElementById('themeBtn')?.addEventListener('click',()=>{root.classList.toggle('dark');localStorage.setItem(KEY,root.classList.contains('dark')?'dark':'light')});
-    // Copy link
-    document.getElementById('copyLink')?.addEventListener('click', async ()=>{
-      const url = location.origin + "{{ share_url or '' }}";
-      await navigator.clipboard.writeText(url);
-      alert('Link copied: '+url);
+    document.getElementById('themeBtn')?.addEventListener('click',()=>{
+      root.classList.toggle('dark');
+      localStorage.setItem(KEY,root.classList.contains('dark')?'dark':'light');
+    });
+
+    // Robust copy helper
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try { await navigator.clipboard.writeText(text); return true; }
+        catch (e) { console.warn("navigator.clipboard failed:", e); }
+      }
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try { return document.execCommand('copy'); }
+      finally { document.body.removeChild(ta); }
+    }
+
+    const copyBtn = document.getElementById('copyLink');
+    copyBtn?.addEventListener('click', async ()=>{
+      const url = copyBtn.dataset.shareUrl || '';
+      if (!url) return;
+      const original = copyBtn.textContent;
+      const ok = await copyText(url);
+      copyBtn.textContent = ok ? 'Copied!' : 'Copy failed';
+      if (!ok) copyBtn.title = url;
+      setTimeout(()=> copyBtn.textContent = original, 1400);
+    });
+
+    // -------- Loading bar + overlay logic --------
+    const topBar = document.getElementById('topProgress');
+    const overlay = document.getElementById('loadingOverlay');
+
+    let progTimer = null, progValue = 0;
+
+    function startProgress() {
+      if (!topBar || !overlay) return;
+      topBar.classList.remove('hidden');
+      overlay.classList.add('show');
+      progValue = 0;
+      topBar.style.width = '0%';
+      // Ease up to ~90% while waiting
+      progTimer = setInterval(() => {
+        progValue = Math.min(90, progValue + Math.random() * 7 + 3);
+        topBar.style.width = progValue + '%';
+      }, 200);
+    }
+
+    function finishProgress() {
+      if (!topBar || !overlay) return;
+      if (progTimer) { clearInterval(progTimer); progTimer = null; }
+      topBar.style.width = '100%';
+    }
+
+    // Show progress on form submit and demo click
+    document.getElementById('analyze-form')?.addEventListener('submit', () => {
+      // swap button text
+      const btn = document.getElementById('submit-btn');
+      if (btn) { btn.textContent = 'Analyzing…'; btn.disabled = true; }
+      startProgress();
+    });
+
+    document.getElementById('demoLink')?.addEventListener('click', () => {
+      startProgress();
+    });
+
+    // When the browser commits to navigation, finish the bar (it will disappear on new page)
+    window.addEventListener('beforeunload', () => { finishProgress(); });
+
+    // If the page loaded via bfcache or was very fast, ensure bars are hidden
+    window.addEventListener('pageshow', () => {
+      if (overlay) overlay.classList.remove('show');
+      if (topBar) { topBar.classList.add('hidden'); topBar.style.width = '0%'; }
     });
   </script>
 </body>
