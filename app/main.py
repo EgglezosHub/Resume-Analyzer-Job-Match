@@ -1,25 +1,30 @@
 # app/main.py
+from __future__ import annotations
+import sentry_sdk
 from fastapi import FastAPI, Depends
+from starlette.middleware.sessions import SessionMiddleware
+
 from app.core.config import settings
-from app.core.security import verify_api_key
+from app.db.session import Base, engine
+from app.routes import ui, auth
 
-from app.db.session import engine
-from app.db import models  # ensures models register on Base BEFORE create_all
-models.Base.metadata.create_all(bind=engine)
+# init DB
+Base.metadata.create_all(bind=engine)
 
-from app.routes import health, resumes, jobs, analyze, match, ui
+# observability
+if settings.sentry_dsn:
+    sentry_sdk.init(dsn=settings.sentry_dsn, traces_sample_rate=0.1)
 
 app = FastAPI(title=settings.api_title, version=settings.api_version)
 
-# Public UI
+# sessions (for OAuth + rate limits)
+app.add_middleware(SessionMiddleware, secret_key=settings.oauth_secret, https_only=False)
+
+# routers
 app.include_router(ui.router, tags=["ui"])
+app.include_router(auth.router, tags=["auth"])
 
-# Public health
-app.include_router(health.router, prefix="", tags=["health"])
-
-# Protected JSON APIs
-app.include_router(resumes.router, prefix="/resumes", tags=["resumes"], dependencies=[Depends(verify_api_key)])
-app.include_router(jobs.router, prefix="/jobs", tags=["jobs"], dependencies=[Depends(verify_api_key)])
-app.include_router(analyze.router, prefix="/analyze", tags=["analyze"], dependencies=[Depends(verify_api_key)])
-app.include_router(match.router, prefix="/match", tags=["match"], dependencies=[Depends(verify_api_key)])
+@app.get("/healthz")
+def health():
+    return {"ok": True, "model": settings.sentence_model}
 

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DevMatch — My analyses</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="max-w-5xl mx-auto px-5 py-8">
+    <header class="mb-6 flex items-center justify-between">
+      <a href="/" class="text-2xl font-extrabold">DevMatch</a>
+      <nav class="flex gap-2">
+        <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
+        <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+      </nav>
+    </header>
+
+    <h2 class="text-xl font-bold mb-4">My analyses</h2>
+
+    {% if not cards %}
+      <div class="text-slate-600">No analyses yet. <a class="text-indigo-600" href="/analyze">Run one →</a></div>
+    {% else %}
+      <div class="grid md:grid-cols-2 gap-4">
+        {% for c in cards %}
+          <a href="{{ c.share_url }}" class="block rounded-lg border border-slate-200 hover:shadow p-4 bg-white">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold">{{ '%.2f'|format(c.score or 0) }}</div>
+              <div class="text-xs text-slate-500">{{ c.created_at }}</div>
+            </div>
+            <div class="text-sm text-slate-700 mt-1">{{ c.title }}</div>
+          </a>
+        {% endfor %}
+      </div>
+
+      {% if pagination and (pagination.has_prev or pagination.has_next) %}
+        <div class="mt-6 flex items-center justify-between text-sm">
+          <a class="px-3 py-1.5 rounded border border-slate-200 {{ '' if pagination.has_prev else 'pointer-events-none opacity-40' }}"
+             href="{{ pagination.prev_url or '#' }}">← Prev</a>
+          <div>Page {{ pagination.page }} / {{ pagination.pages }}</div>
+          <a class="px-3 py-1.5 rounded border border-slate-200 {{ '' if pagination.has_next else 'pointer-events-none opacity-40' }}"
+             href="{{ pagination.next_url or '#' }}">Next →</a>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</body>
+</html>
+

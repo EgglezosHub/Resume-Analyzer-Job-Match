@@ -1,24 +1,24 @@
 # app/db/session.py
-import os
+from __future__ import annotations
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
+from app.core.config import settings as cfg
 
-# If DATABASE_URL is not set, default to a file-backed SQLite placed at repo root.
-DEFAULT_SQLITE = "sqlite:///./dev.db"
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_SQLITE)
+def _normalize_url(url: str | None) -> str:
+    # Treat None or empty/whitespace as unset and fall back to SQLite in container
+    if not url or not url.strip():
+        return "sqlite:////app/dev.db"
+    return url.strip()
 
-# Convert "sqlite:///./dev.db" to an **absolute** path so CWD changes don't create a 2nd DB
-if DATABASE_URL.startswith("sqlite:///./"):
-    # repo_root = .../resume-match-api
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-    abs_db = os.path.abspath(os.path.join(repo_root, DATABASE_URL.replace("sqlite:///./", "")))
-    DATABASE_URL = f"sqlite:///{abs_db}"
+DATABASE_URL = _normalize_url(getattr(cfg, "database_url", None))
 
+# SQLite needs special connect args; Postgres does not
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args, future=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_engine(DATABASE_URL, echo=False, future=True, connect_args=connect_args)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+Base = declarative_base()
 
-# helpful startup log
+# Optional: small startup log to help debugging
 print(f"[DB] Using {DATABASE_URL}")
 

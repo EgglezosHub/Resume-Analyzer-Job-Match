@@ -11,9 +11,15 @@
   <div class="max-w-5xl mx-auto px-6 py-14">
     <header class="flex items-center justify-between">
       <h1 class="text-2xl font-extrabold">DevMatch</h1>
-      <nav class="text-sm">
+      <nav class="text-sm flex items-center gap-2">
+        {% if request.session and request.session.get('user_id') %}
+          <a href="/dashboard" class="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600">Dashboard</a>
+          <a href="/logout" class="px-3 py-1 rounded bg-slate-200 text-slate-900 hover:bg-white">Logout</a>
+        {% else %}
+          <a href="/login/github" class="px-3 py-1 rounded bg-slate-200 text-slate-900 hover:bg-white">Login with GitHub</a>
+        {% endif %}
         <a href="/demo" class="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500">Try Demo</a>
-        <a href="/analyze" class="ml-2 px-3 py-1 rounded bg-slate-700 hover:bg-slate-600">Analyze</a>
+        <a href="/analyze" class="px-3 py-1 rounded bg-slate-700 hover:bg-slate-600">Analyze</a>
       </nav>
     </header>
 
@@ -21,9 +27,9 @@
       <div>
         <h2 class="text-4xl font-extrabold leading-tight">Instant fit check for <span class="text-indigo-400">software roles</span>.</h2>
         <p class="mt-4 text-slate-300">Upload your developer resume and a JD, then get JD-skill coverage, semantic similarity, missing skills, and actionable tips.</p>
-        <div class="mt-6">
+        <div class="mt-6 flex gap-3">
           <a href="/demo" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 font-semibold">See it in action</a>
-          <a href="/analyze" class="ml-3 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold">Analyze yours</a>
+          <a href="/analyze" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold">Analyze yours</a>
         </div>
       </div>
       <div class="rounded-xl bg-slate-800/70 border border-slate-700 p-5">
@@ -38,3 +44,4 @@
   </div>
 </body>
 </html>
+
