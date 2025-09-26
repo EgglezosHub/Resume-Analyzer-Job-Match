@@ -21,7 +21,8 @@
           <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Login</a>
           <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
         {% endif %}
-        <a class="px-3 py-1.5 rounded bg-indigo-500 text-white text-sm" href="/demo">Try Demo</a>
+        {% if not user %}<a class="px-3 py-1.5 rounded bg-indigo-500 text-white text-sm" href="/demo">Try Demo</a>{% endif %}
+
         <a class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm" href="/analyze">Analyze</a>
       </nav>
     </header>
