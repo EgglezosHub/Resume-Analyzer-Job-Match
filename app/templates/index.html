@@ -45,6 +45,11 @@
           <a href="{{ share_url }}.pdf" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Download report (PDF)</a>
         {% endif %}
         <button id="themeBtn" class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">Theme</button>
+	<a href="/login/password" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Login</a>
+	<a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
+	{% if request.session and request.session.get('user_id') %}
+	  <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+	{% endif %}
       </div>
     </header>
 

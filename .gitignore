@@ -25,3 +25,4 @@ build/
 *.log
 
 .cache/
+node_modules/

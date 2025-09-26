@@ -2,8 +2,8 @@
 from __future__ import annotations
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, Request, Form
+from fastapi.responses import RedirectResponse, HTMLResponse
 from sqlalchemy.orm import Session
 
 from authlib.integrations.starlette_client import OAuth
@@ -12,7 +12,13 @@ from app.db.session import SessionLocal
 from app.db.models import User
 from app.core.config import settings as cfg
 
+from app.utils.passwords import hash_password, verify_password
+from starlette.templating import Jinja2Templates
+
+
 router = APIRouter(prefix="", tags=["auth"])
+templates = Jinja2Templates(directory="app/templates")
+
 
 # DB dep
 def get_db():
@@ -21,6 +27,74 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# ---------- Email + Password ----------
+@router.get("/signup", response_class=HTMLResponse)
+async def signup_page(request: Request):
+    return templates.TemplateResponse("signup.html", {"request": request})
+
+@router.post("/signup", response_class=HTMLResponse)
+async def signup_submit(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    email = (email or "").strip().lower()
+    pwd = (password or "").strip()
+
+    err = None
+    if not email or "@" not in email:
+        err = "Please enter a valid email."
+    elif len(pwd) < 8:
+        err = "Password must be at least 8 characters."
+    elif db.query(User).filter(User.email == email).first():
+        err = "An account with this email already exists."
+
+    if err:
+        return templates.TemplateResponse("signup.html", {"request": request, "error": err, "email": email})
+
+    u = User(email=email, name=email.split("@")[0], password_hash=hash_password(pwd))
+    db.add(u); db.commit(); db.refresh(u)
+
+    if hasattr(request, "session"):
+        request.session["user_id"] = u.id
+
+    return RedirectResponse(url="/dashboard", status_code=302)
+
+@router.get("/login/password", response_class=HTMLResponse)
+async def login_password_page(request: Request):
+    return templates.TemplateResponse("login_password.html", {"request": request})
+
+@router.post("/login/password", response_class=HTMLResponse)
+async def login_password_submit(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    email = (email or "").strip().lower()
+    pwd = (password or "").strip()
+
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not user.password_hash or not verify_password(pwd, user.password_hash):
+        return templates.TemplateResponse(
+            "login_password.html",
+            {"request": request, "error": "Invalid email or password.", "email": email},
+        )
+
+    if hasattr(request, "session"):
+        request.session["user_id"] = user.id
+
+    return RedirectResponse(url="/dashboard", status_code=302)
+
+@router.get("/logout")
+async def logout(request: Request):
+    if hasattr(request, "session"):
+        request.session.clear()
+    return RedirectResponse(url="/", status_code=302)
+
 
 # ----- OAuth (GitHub = OAuth2, NOT OIDC) -----
 oauth = OAuth()

@@ -27,4 +27,5 @@ redis==5.0.8
 sentry-sdk==2.13.0
 posthog==3.5.0
 user-agents==2.2.0
+passlib[bcrypt]==1.7.4
 
