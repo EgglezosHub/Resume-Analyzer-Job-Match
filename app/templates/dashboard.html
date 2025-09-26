@@ -8,13 +8,22 @@
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900">
   <div class="max-w-5xl mx-auto px-5 py-8">
+    <!-- app/templates/dashboard.html (replace header nav with auth-aware block) -->
     <header class="mb-6 flex items-center justify-between">
       <a href="/" class="text-2xl font-extrabold">DevMatch</a>
-      <nav class="flex gap-2">
-        <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
-        <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+      <nav class="flex gap-2 items-center">
+        {% if user %}
+          <span class="hidden sm:inline text-sm text-slate-500">Hi, {{ user.name or user.email }}</span>
+          <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
+          <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+        {% else %}
+          <a href="/login/github" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Login with GitHub</a>
+          <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
+          <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
+        {% endif %}
       </nav>
     </header>
+
 
     <h2 class="text-xl font-bold mb-4">My analyses</h2>
 

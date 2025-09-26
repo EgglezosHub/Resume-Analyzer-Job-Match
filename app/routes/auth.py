@@ -32,7 +32,10 @@ def get_db():
 # ---------- Email + Password ----------
 @router.get("/signup", response_class=HTMLResponse)
 async def signup_page(request: Request):
+    if hasattr(request, "session") and request.session.get("user_id"):
+        return RedirectResponse("/dashboard", status_code=302)
     return templates.TemplateResponse("signup.html", {"request": request})
+
 
 @router.post("/signup", response_class=HTMLResponse)
 async def signup_submit(
@@ -53,10 +56,24 @@ async def signup_submit(
         err = "An account with this email already exists."
 
     if err:
-        return templates.TemplateResponse("signup.html", {"request": request, "error": err, "email": email})
+        return templates.TemplateResponse(
+            "signup.html",
+            {"request": request, "error": err, "email": email}
+        )
 
-    u = User(email=email, name=email.split("@")[0], password_hash=hash_password(pwd))
-    db.add(u); db.commit(); db.refresh(u)
+    try:
+        u = User(
+            email=email,
+            name=email.split("@")[0],
+            password_hash=hash_password(pwd),
+        )
+        db.add(u); db.commit(); db.refresh(u)
+    except ValueError as ve:
+        # Catch errors from hash_password (e.g., too short/too long)
+        return templates.TemplateResponse(
+            "signup.html",
+            {"request": request, "error": str(ve), "email": email}
+        )
 
     if hasattr(request, "session"):
         request.session["user_id"] = u.id
@@ -65,7 +82,10 @@ async def signup_submit(
 
 @router.get("/login/password", response_class=HTMLResponse)
 async def login_password_page(request: Request):
+    if hasattr(request, "session") and request.session.get("user_id"):
+        return RedirectResponse("/dashboard", status_code=302)
     return templates.TemplateResponse("login_password.html", {"request": request})
+
 
 @router.post("/login/password", response_class=HTMLResponse)
 async def login_password_submit(
@@ -115,7 +135,6 @@ def _abs(request: Request, path: str) -> str:
 @router.get("/login/github")
 async def login_github(request: Request):
     if "github" not in oauth._clients:
-        # GitHub creds not configured; just go home.
         return RedirectResponse("/")
     redirect_uri = _abs(request, "/auth/github/callback")
     return await oauth.github.authorize_redirect(request, redirect_uri)
@@ -126,11 +145,10 @@ async def auth_github_callback(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse("/?error=github_not_configured")
 
     token = await oauth.github.authorize_access_token(request)
-    # Basic user info
     me = await oauth.github.get("user", token=token)
     data = me.json() if me else {}
     email = data.get("email")
-    # Some accounts don’t return email in /user unless public; fetch primary email
+
     if not email:
         emails = await oauth.github.get("user/emails", token=token)
         if emails and emails.json():
@@ -140,24 +158,15 @@ async def auth_github_callback(request: Request, db: Session = Depends(get_db)):
     if not email:
         return RedirectResponse("/?error=no_email_from_github")
 
-    # Upsert user
     user: Optional[User] = db.query(User).filter(User.email == email).first()
     if not user:
         user = User(email=email, name=data.get("name") or data.get("login"))
         db.add(user); db.commit(); db.refresh(user)
 
-    # Put into session
     if hasattr(request, "session"):
         request.session["user_id"] = user.id
         request.session["user_email"] = user.email
         request.session["user_name"] = user.name or ""
 
-    # Go to dashboard
     return RedirectResponse("/dashboard")
-
-@router.get("/logout")
-async def logout(request: Request):
-    if hasattr(request, "session"):
-        request.session.clear()
-    return RedirectResponse("/")
 
