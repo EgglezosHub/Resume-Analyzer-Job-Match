@@ -2,144 +2,169 @@
 <html lang="en" class="h-full">
 <head>
   <meta charset="utf-8" />
-  <title>DevMatch — Resume insights tailored to developers</title>
+  <title>DevMatch — Analyze</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','ui-sans-serif','system-ui']}}}}</script>
-  <style>
-    .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .55rem;border-radius:.6rem;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;font-size:.8rem}
-    .dark .chip{background:linear-gradient(180deg,#0f172a,#0b1324);border-color:#1f2937;color:#e5e7eb}
-    .chip-amber{background:linear-gradient(180deg,#fff7ed,#fffbeb);border-color:#fde68a}
-    .dark .chip-amber{background:linear-gradient(180deg,#1f2937,#111827);border-color:#f59e0b;color:#fcd34d}
-    .chip-green{background:linear-gradient(180deg,#ecfdf5,#f0fdf4);border-color:#a7f3d0}
-    .dark .chip-green{background:linear-gradient(180deg,#1f2937,#111827);border-color:#10b981;color:#86efac}
-    .bar{height:.5rem;border-radius:.5rem;background:linear-gradient(90deg,#a5b4fc,#60a5fa,#34d399)}
-    .card{background:rgba(255,255,255,.75);border:1px solid rgba(15,23,42,.06);border-radius:1rem}
-    .dark .card{background:rgba(15,23,42,.5);border-color:rgba(148,163,184,.15)}
-    .loading-overlay{position:fixed;inset:0;background:rgba(15,23,42,.35);backdrop-filter:saturate(110%) blur(2px);display:none;align-items:center;justify-content:center;z-index:60}
-    .loading-overlay.show{display:flex}
-    .loading-card{background:rgba(255,255,255,.9);border:1px solid rgba(15,23,42,.06);color:#0f172a;border-radius:12px;padding:14px 16px;font-weight:600;box-shadow:0 10px 25px rgba(2,6,23,.1)}
-    .dark .loading-card{background:rgba(15,23,42,.9);color:#e5e7eb;border-color:#334155}
-    .top-progress{position:fixed;left:0;top:0;height:3px;width:0%;background:linear-gradient(90deg,#6366f1,#22c55e,#60a5fa);z-index:70;box-shadow:0 0 12px rgba(99,102,241,.5);transition:width .25s}
-    .top-progress.hidden{display:none}
-  </style>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] }}}}
+  </script>
 </head>
-<body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200">
-  <div id="topProgress" class="top-progress hidden"></div>
-  <div id="loadingOverlay" class="loading-overlay"><div class="loading-card">Analyzing… this can take a few seconds.</div></div>
-
+<body class="min-h-screen bg-slate-50 text-slate-900">
   <div class="max-w-5xl mx-auto px-5 py-8">
-    <!-- app/templates/index.html (replace header nav) -->
-    <header class="mb-6 flex items-center justify-between">
-      <a href="/" class="text-2xl font-extrabold">DevMatch</a>
-      <div class="flex items-center gap-2">
-        {% if result and share_url %}
-          <button id="copyLink" type="button" data-share-url="{{ share_url }}"
-                  class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Copy share link</button>
-          <a href="{{ share_url }}.pdf" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Download report (PDF)</a>
-        {% endif %}
-
-        {% if user %}
-          <span class="hidden sm:inline text-sm text-slate-500 dark:text-slate-300">Hi, {{ user.name or user.email }}</span>
-          <a href="/dashboard" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Dashboard</a>
-          <a href="/logout" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Logout</a>
-        {% else %}
-          <a href="/login/github" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Login with GitHub</a>
-          <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
-          <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
-        {% endif %}
-
-        <button id="themeBtn" class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">
-          Theme
-        </button>
+    <!-- Wrap-friendly header -->
+    <header class="mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <a href="/" class="text-2xl font-extrabold mr-4">DevMatch</a>
+        <nav class="flex flex-wrap gap-2">
+          {% if user %}
+            <span class="hidden sm:inline text-sm text-slate-500 self-center">Hi, {{ user.name or user.email }}</span>
+            <a href="/dashboard" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Dashboard</a>
+            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+          {% else %}
+            <a href="/login/github" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Login with GitHub</a>
+            <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
+            <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
+          {% endif %}
+        </nav>
       </div>
     </header>
+
     {% if error %}
-      <div class="card p-4 mb-6 border border-rose-200 bg-rose-50/70 text-rose-800 dark:text-rose-200 dark:bg-rose-900/30 dark:border-rose-900/40">{{ error }}</div>
+      <div class="rounded-lg border border-rose-200 bg-rose-50 text-rose-800 px-4 py-3 mb-6">
+        {{ error }}
+      </div>
     {% endif %}
 
     {% if not read_only %}
-      <form id="analyze-form" action="/ui-match" method="post" enctype="multipart/form-data" class="card p-6 mb-8">
+      <form id="analyze-form" action="/ui-match" method="post" enctype="multipart/form-data"
+            class="rounded-xl border border-slate-200 bg-white p-6 mb-8 shadow-sm">
+        <h2 class="text-lg font-semibold mb-3">Analyze a new match</h2>
         <div class="grid md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-semibold mb-2">Resume (PDF)</label>
-            <input name="file" type="file" accept="application/pdf" required class="block w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 bg-white/70 border border-slate-200 rounded-lg p-2 dark:bg-slate-900/50 dark:border-slate-700" />
-            <p class="text-xs text-slate-500 mt-2 dark:text-slate-400">PDF only.</p>
+            <input name="file" type="file" accept="application/pdf" required
+                   class="block w-full text-sm file:mr-3 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 border border-slate-200 rounded-lg p-2 bg-white" />
+            <p class="text-xs text-slate-500 mt-2">PDF only.</p>
           </div>
           <div>
             <label class="block text-sm font-semibold mb-2">Software Engineering Job Description</label>
-            <textarea name="job_description" rows="7" required class="w-full p-3 bg-white/70 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-slate-900/50 dark:border-slate-700" placeholder="Paste the JD here…"></textarea>
+            <textarea name="job_description" rows="7" required
+                      class="w-full p-3 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/40"
+                      placeholder="Paste the JD here…"></textarea>
           </div>
         </div>
-        <div class="mt-6">
-          <button id="submit-btn" type="submit" class="px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold">Analyze</button>
-          <a id="demoLink" class="ml-3 text-sm text-slate-600 dark:text-slate-400" href="/demo">or try demo →</a>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button id="submit-btn" type="submit" class="px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold">
+            Analyze
+          </button>
+          {% if not user %}
+            <a id="demoLink" class="text-sm text-slate-600" href="/demo">or try demo →</a>
+          {% endif %}
         </div>
       </form>
     {% endif %}
 
     {% if result %}
-      {% set ms = result.ms or {} %}{% set ss = result.ss or {} %}{% set so = result.so or {} %}
+      <!-- Summary cards -->
+      {% set ms = result.ms or {} %}
+      {% set ss = result.ss or {} %}
+      {% set so = result.so or {} %}
+
       <section class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="card p-5"><div class="flex justify-between"><h3 class="text-sm font-medium">Match Score</h3><span class="chip {{ 'chip-green' if ms.label=='Strong' else ('chip-amber' if ms.label=='Medium' else '') }}">{{ ms.label or '—' }}</span></div><div class="mt-2 flex items-baseline gap-2"><div class="text-3xl font-extrabold">{{ '%.2f'|format(result.match_score or 0) }}</div><div class="text-xs text-slate-500">{{ ms.pct or 0 }}%</div></div><div class="mt-3 bg-slate-200/70 rounded dark:bg-slate-700/60"><div class="bar" style="width: {{ ms.pct or 0 }}%"></div></div></div>
-          <div class="card p-5"><div class="flex justify-between"><h3 class="text-sm font-medium">Semantic Similarity</h3><span class="chip {{ 'chip-green' if ss.label=='Strong' else ('chip-amber' if ss.label=='Medium' else '') }}">{{ ss.label or '—' }}</span></div><div class="mt-2 flex items-baseline gap-2"><div class="text-3xl font-extrabold">{{ '%.2f'|format(result.semantic_similarity or 0) }}</div><div class="text-xs text-slate-500">{{ ss.pct or 0 }}%</div></div><div class="mt-3 bg-slate-200/70 rounded dark:bg-slate-700/60"><div class="bar" style="width: {{ ss.pct or 0 }}%"></div></div></div>
-          <div class="card p-5"><div class="flex justify-between"><h3 class="text-sm font-medium">JD Skill Coverage</h3><span class="chip {{ 'chip-green' if so.label=='Strong' else ('chip-amber' if so.label=='Medium' else '') }}">{{ so.label or '—' }}</span></div><div class="mt-2 flex items-baseline gap-2"><div class="text-3xl font-extrabold">{{ '%.2f'|format(result.skill_overlap or 0) }}</div><div class="text-xs text-slate-500">{{ so.pct or 0 }}%</div></div><div class="mt-3 bg-slate-200/70 rounded dark:bg-slate-700/60"><div class="bar" style="width: {{ so.pct or 0 }}%"></div></div></div>
-        </div>
-
-        <div class="card p-5">
-          <h3 class="text-sm font-semibold mb-3">JD vs Resume skills</h3>
-          <div class="grid md:grid-cols-3 gap-4">
-            <div><div class="text-xs font-semibold mb-2">JD skills ({{ result.jd_skills|length }})</div><div class="flex flex-wrap gap-2">{% for s in result.jd_skills %}<span class="chip">{{ s }}</span>{% endfor %}</div></div>
-            <div><div class="text-xs font-semibold mb-2">Resume skills ({{ result.resume_skills|length }})</div><div class="flex flex-wrap gap-2">{% for s in result.resume_skills %}<span class="chip">{{ s }}</span>{% endfor %}</div></div>
-            <div><div class="text-xs font-semibold mb-2">Overlap ({{ result.overlap_skills|length }})</div><div class="flex flex-wrap gap-2">{% for s in result.overlap_skills %}<span class="chip chip-green">{{ s }}</span>{% endfor %}</div></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex justify-between">
+              <h3 class="text-sm font-medium">Match Score</h3>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-100">{{ ms.label or '—' }}</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.match_score or 0) }}</div>
+              <div class="text-xs text-slate-500">{{ ms.pct or 0 }}%</div>
+            </div>
+            <div class="mt-3 h-2 bg-slate-200 rounded">
+              <div class="h-2 rounded bg-indigo-500" style="width: {{ ms.pct or 0 }}%"></div>
+            </div>
           </div>
-        </div>
 
-        <div class="card p-5">
-          <div class="grid md:grid-cols-2 gap-6">
-            <div><div class="flex items-center gap-2 mb-2"><h3 class="text-sm font-semibold">Extracted from Resume</h3><span class="chip">count {{ result.skills | length }}</span></div><div class="flex flex-wrap gap-2">{% for s in result.skills %}<span class="chip">{{ s }}</span>{% endfor %}</div></div>
-            <div>
-              <div class="flex items-center gap-2 mb-2"><h3 class="text-sm font-semibold">JD Missing in Resume</h3><span class="chip {{ 'chip-amber' if result.missing_skills|length else '' }}">{{ result.missing_skills|length }} gap{{ '' if result.missing_skills|length==1 else 's' }}</span></div>
-              {% set coverage = result.skill_overlap or 0 %}{% set jd_count = result.jd_skills | length %}
-              {% if jd_count == 0 %}
-                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">JD contained no recognizable tech keywords. Scores rely more on semantic similarity.</div>
-              {% elif result.missing_skills and result.missing_skills|length > 0 %}
-                <div class="flex flex-wrap gap-2">{% for s in result.missing_skills %}<span class="chip chip-amber">{{ s }}</span>{% endfor %}</div>
-              {% elif coverage < 1.0 %}
-                <div class="text-sm text-amber-700 bg-amber-50/70 border border-amber-200 rounded-lg px-3 py-2 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">No explicit gaps, but coverage is {{ (coverage*100)|round(0) }}%. Review cloud/IaC/framework specifics.</div>
-              {% else %}
-                <div class="text-sm text-emerald-700 bg-emerald-50/70 border border-emerald-200 rounded-lg px-3 py-2">Great—no JD gaps detected and 100% coverage!</div>
-              {% endif %}
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex justify-between">
+              <h3 class="text-sm font-medium">Semantic Similarity</h3>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-100">{{ ss.label or '—' }}</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.semantic_similarity or 0) }}</div>
+              <div class="text-xs text-slate-500">{{ ss.pct or 0 }}%</div>
+            </div>
+            <div class="mt-3 h-2 bg-slate-200 rounded">
+              <div class="h-2 rounded bg-indigo-500" style="width: {{ ss.pct or 0 }}%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex justify-between">
+              <h3 class="text-sm font-medium">JD Skill Coverage</h3>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-100">{{ so.label or '—' }}</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-3xl font-extrabold">{{ '%.2f'|format(result.skill_overlap or 0) }}</div>
+              <div class="text-xs text-slate-500">{{ so.pct or 0 }}%</div>
+            </div>
+            <div class="mt-3 h-2 bg-slate-200 rounded">
+              <div class="h-2 rounded bg-indigo-500" style="width: {{ so.pct or 0 }}%"></div>
             </div>
           </div>
         </div>
 
-        <div class="card p-5">
+        <!-- Skill sets -->
+        <div class="rounded-xl border border-slate-200 bg-white p-5">
+          <h3 class="text-sm font-semibold mb-3">JD vs Resume skills</h3>
+          <div class="grid md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <div class="text-xs font-semibold mb-2">JD skills ({{ result.jd_skills|length }})</div>
+              <div class="flex flex-wrap gap-2">
+                {% for s in result.jd_skills %}<span class="px-2 py-1 rounded bg-slate-100">{{ s }}</span>{% endfor %}
+              </div>
+            </div>
+            <div>
+              <div class="text-xs font-semibold mb-2">Resume skills ({{ result.resume_skills|length }})</div>
+              <div class="flex flex-wrap gap-2">
+                {% for s in result.resume_skills %}<span class="px-2 py-1 rounded bg-slate-100">{{ s }}</span>{% endfor %}
+              </div>
+            </div>
+            <div>
+              <div class="text-xs font-semibold mb-2">Overlap ({{ result.overlap_skills|length }})</div>
+              <div class="flex flex-wrap gap-2">
+                {% for s in result.overlap_skills %}<span class="px-2 py-1 rounded bg-green-100 text-green-800">{{ s }}</span>{% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="rounded-xl border border-slate-200 bg-white p-5">
           <h3 class="text-lg font-semibold mb-2">Recommendations</h3>
           {% if result.recommendations and result.recommendations|length %}
-            <ul class="space-y-2">{% for tip in result.recommendations %}<li class="text-sm">• {{ tip }}</li>{% endfor %}</ul>
+            <ul class="space-y-2 text-sm">
+              {% for tip in result.recommendations %}
+                <li>• {{ tip }}</li>
+              {% endfor %}
+            </ul>
           {% else %}
-            <div class="text-sm text-slate-600 dark:text-slate-400">No extra recommendations—your resume aligns well with this JD.</div>
+            <div class="text-sm text-slate-600">No extra recommendations—your resume aligns well with this JD.</div>
           {% endif %}
         </div>
       </section>
+
+      <!-- Share / PDF -->
+      <div class="mt-6 flex flex-wrap gap-3">
+        {% if share_url %}
+          <a href="{{ share_url }}.pdf" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Download report (PDF)</a>
+          <a href="{{ share_url }}" class="px-3 py-1.5 rounded border border-slate-200 text-sm">Open share page</a>
+        {% endif %}
+      </div>
     {% endif %}
   </div>
-
-  <script>
-    const root=document.documentElement,KEY='resume_ui_theme';
-    if(localStorage.getItem(KEY)==='dark') root.classList.add('dark');
-    document.getElementById('themeBtn')?.addEventListener('click',()=>{root.classList.toggle('dark');localStorage.setItem(KEY,root.classList.contains('dark')?'dark':'light')});
-    async function copyText(t){if(navigator.clipboard&&window.isSecureContext){try{await navigator.clipboard.writeText(t);return true}catch{}}const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{return document.execCommand('copy')}finally{document.body.removeChild(a)}}
-    const copyBtn=document.getElementById('copyLink');copyBtn?.addEventListener('click',async()=>{const url=copyBtn.dataset.shareUrl||'';if(!url)return;const orig=copyBtn.textContent;const ok=await copyText(url);copyBtn.textContent=ok?'Copied!':'Copy failed';if(!ok)copyBtn.title=url;setTimeout(()=>copyBtn.textContent=orig,1400);});
-    const topBar=document.getElementById('topProgress');const overlay=document.getElementById('loadingOverlay');let t=null,v=0;function startP(){if(!topBar||!overlay)return;topBar.classList.remove('hidden');overlay.classList.add('show');v=0;topBar.style.width='0%';t=setInterval(()=>{v=Math.min(90,v+Math.random()*7+3);topBar.style.width=v+'%'},200)}function endP(){if(!topBar||!overlay)return;if(t){clearInterval(t);t=null}topBar.style.width='100%'}
-    document.getElementById('analyze-form')?.addEventListener('submit',()=>{const b=document.getElementById('submit-btn');if(b){b.textContent='Analyzing…';b.disabled=true}startP();});
-    document.getElementById('demoLink')?.addEventListener('click',()=>{startP();});
-    window.addEventListener('beforeunload',()=>{endP();});
-    window.addEventListener('pageshow',()=>{overlay?.classList.remove('show');topBar?.classList.add('hidden');if(topBar)topBar.style.width='0%';});
-  </script>
 </body>
 </html>
 

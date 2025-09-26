@@ -1,149 +1,69 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>DevMatch — My analyses</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Inter + Tailwind (same setup as index/landing) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] } } }
-    }
-  </script>
-
-  <style>
-    .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .55rem;border-radius:.6rem;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;font-size:.8rem}
-    .dark .chip{background:linear-gradient(180deg,#0f172a,#0b1324);border-color:#1f2937;color:#e5e7eb}
-    .chip-amber{background:linear-gradient(180deg,#fff7ed,#fffbeb);border-color:#fde68a}
-    .dark .chip-amber{background:linear-gradient(180deg,#1f2937,#111827);border-color:#f59e0b;color:#fcd34d}
-    .chip-green{background:linear-gradient(180deg,#ecfdf5,#f0fdf4);border-color:#a7f3d0}
-    .dark .chip-green{background:linear-gradient(180deg,#1f2937,#111827);border-color:#10b981;color:#86efac}
-    .chip-sky{background:linear-gradient(180deg,#f0f9ff,#eff6ff);border-color:#bae6fd}
-    .dark .chip-sky{background:linear-gradient(180deg,#0b1324,#0b1220);border-color:#38bdf8;color:#bae6fd}
-
-    .card{background:rgba(255,255,255,.75);border:1px solid rgba(15,23,42,.06);border-radius:1rem}
-    .dark .card{background:rgba(15,23,42,.5);border-color:rgba(148,163,184,.15)}
-    .score-badge{font-weight:700;border-radius:.55rem;padding:.15rem .5rem;font-size:.75rem}
-    .score-weak{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c}
-    .dark .score-weak{background:#2a0e0e;border-color:#7f1d1d;color:#fecaca}
-    .score-medium{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-    .dark .score-medium{background:#1f1a06;border-color:#f59e0b;color:#fcd34d}
-    .score-strong{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-    .dark .score-strong{background:#0d1f16;border-color:#10b981;color:#86efac}
-  </style>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] }}}}</script>
 </head>
-
-<body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200">
-  <div class="max-w-6xl mx-auto px-5 py-8">
-    <!-- Header -->
-    <header class="mb-8 flex items-center justify-between">
-      <a href="/" class="text-2xl font-extrabold">DevMatch</a>
-
-      <nav class="flex items-center gap-2">
-        {% if user %}
-          <span class="hidden sm:inline text-sm text-slate-500 dark:text-slate-400">Hi, {{ user.name or user.email }}</span>
-          <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
-          <button id="themeBtn" class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">
-            Theme
-          </button>
-          <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-100 text-sm">Logout</a>
-        {% else %}
-          <a href="/login/github" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">GitHub</a>
-          <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-100 text-sm">Login</a>
-          <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
-        {% endif %}
-      </nav>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="max-w-5xl mx-auto px-5 py-8">
+    <!-- Wrap-friendly header -->
+    <header class="mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <a href="/" class="text-2xl font-extrabold mr-4">DevMatch</a>
+        <nav class="flex flex-wrap gap-2">
+          {% if user %}
+            <span class="hidden sm:inline text-sm text-slate-500 self-center">Hi, {{ user.name or user.email }}</span>
+            <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
+            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+          {% else %}
+            <a href="/login/github" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Login with GitHub</a>
+            <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
+            <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
+          {% endif %}
+        </nav>
+      </div>
     </header>
 
-    <!-- Title + quick meta -->
-    <div class="mb-6 flex items-center justify-between gap-3">
-      <div>
-        <h1 class="text-xl sm:text-2xl font-bold">My analyses</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Your latest matches and scores. Click any card to view the full report.
-        </p>
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <h2 class="text-xl font-bold">My analyses</h2>
+      <div class="text-sm text-slate-500">
+        {% if pagination %}Page {{ pagination.page }} / {{ pagination.pages }}{% endif %}
       </div>
-      {% if cards and cards|length %}
-        <div class="hidden sm:flex items-center gap-2">
-          <span class="chip chip-sky">Total: {{ cards|length }}</span>
-          <!-- Show the most recent created_at if available -->
-          <span class="chip">Updated: {{ cards[0].created_at }}</span>
-        </div>
-      {% endif %}
     </div>
 
-    <!-- Content -->
-    {% if not cards or not cards|length %}
-      <div class="card p-6 border border-dashed border-slate-300 dark:border-slate-700 text-center">
-        <div class="text-lg font-semibold mb-1">No analyses yet</div>
-        <p class="text-sm text-slate-600 dark:text-slate-400">
-          Run your first one to see insights tailored to your resume.
-        </p>
-        <a href="/analyze" class="inline-block mt-4 px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold">
-          New analysis
-        </a>
+    {% if not cards %}
+      <div class="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+        <p class="text-slate-600">No analyses yet.</p>
+        <a class="inline-block mt-3 px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold" href="/analyze">Run one →</a>
       </div>
     {% else %}
-      <!-- Cards grid -->
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="grid md:grid-cols-2 gap-4">
         {% for c in cards %}
-          {% set score = c.score or 0 %}
-          {% set label = 'Strong' if score>=0.6 else ('Medium' if score>=0.4 else 'Weak') %}
-          {% set badge = 'score-strong' if label=='Strong' else ('score-medium' if label=='Medium' else 'score-weak') %}
-
-          <a href="{{ c.share_url }}"
-             class="card group block p-4 hover:shadow-lg transition-shadow border border-slate-200 dark:border-slate-700">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-2xl font-extrabold tracking-tight">{{ '%.2f'|format(score) }}</div>
-                <div class="mt-1 inline-flex items-center gap-2">
-                  <span class="score-badge {{ badge }}">{{ label }}</span>
-                </div>
-              </div>
-              <div class="text-xs text-slate-500 dark:text-slate-400 ml-3 text-right">
-                {{ c.created_at }}
-              </div>
+          <a href="{{ c.share_url }}" class="block rounded-xl border border-slate-200 bg-white p-4 hover:shadow-sm transition">
+            <div class="flex items-center justify-between">
+              <div class="text-slate-900 font-semibold">{{ '%.2f'|format(c.score or 0) }}</div>
+              <div class="text-xs text-slate-500">{{ c.created_at }}</div>
             </div>
-
-            <div class="mt-3 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">
-              {{ c.title }}
-            </div>
-
-            <div class="mt-4 text-xs text-indigo-600 group-hover:underline">Open report →</div>
+            <div class="text-sm text-slate-700 mt-1 line-clamp-2">{{ c.title }}</div>
           </a>
         {% endfor %}
       </div>
 
-      <!-- Pagination -->
       {% if pagination and (pagination.has_prev or pagination.has_next) %}
-        <div class="mt-8 flex items-center justify-between text-sm">
-          <a class="px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700
-                    {{ '' if pagination.has_prev else 'pointer-events-none opacity-40' }}"
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm">
+          <a class="px-3 py-1.5 rounded border border-slate-200 {{ '' if pagination.has_prev else 'pointer-events-none opacity-40' }}"
              href="{{ pagination.prev_url or '#' }}">← Prev</a>
-          <div class="text-slate-600 dark:text-slate-400">
-            Page {{ pagination.page }} / {{ pagination.pages }}
-          </div>
-          <a class="px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700
-                    {{ '' if pagination.has_next else 'pointer-events-none opacity-40' }}"
+          <div>Page {{ pagination.page }} / {{ pagination.pages }}</div>
+          <a class="px-3 py-1.5 rounded border border-slate-200 {{ '' if pagination.has_next else 'pointer-events-none opacity-40' }}"
              href="{{ pagination.next_url or '#' }}">Next →</a>
         </div>
       {% endif %}
     {% endif %}
   </div>
-
-  <script>
-    // Theme toggle (same key as index.html)
-    const root = document.documentElement, KEY='resume_ui_theme';
-    if (localStorage.getItem(KEY)==='dark') root.classList.add('dark');
-    document.getElementById('themeBtn')?.addEventListener('click',()=>{
-      root.classList.toggle('dark');
-      localStorage.setItem(KEY,root.classList.contains('dark')?'dark':'light');
-    });
-  </script>
 </body>
 </html>
 

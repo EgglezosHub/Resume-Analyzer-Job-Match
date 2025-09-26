@@ -26,7 +26,6 @@ if cfg.posthog_key:
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
-
 # --------------------
 # DB dependency
 # --------------------
@@ -37,23 +36,26 @@ def get_db():
     finally:
         db.close()
 
-
 # --------------------
 # Helpers
 # --------------------
+def _current_user(request: Request, db: Session) -> Optional[User]:
+    """Return the logged-in user (or None) based on session user_id."""
+    try:
+        uid = request.session.get("user_id") if hasattr(request, "session") else None
+        return db.get(User, uid) if uid else None
+    except Exception:
+        return None
+
 def _clean_text(s: str) -> str:
     return (s or "").encode("utf-8", "ignore").decode("utf-8", "ignore").replace("\r", "")
-
 
 def _bucket(score: float):
     score = 0.0 if score is None else float(score)
     pct = int(round(max(0.0, min(1.0, score)) * 100))
-    if score < 0.4:
-        return ("Weak", pct)
-    if score < 0.6:
-        return ("Medium", pct)
+    if score < 0.4: return ("Weak", pct)
+    if score < 0.6: return ("Medium", pct)
     return ("Strong", pct)
-
 
 def _build_result_payload(analysis: dict, matched: dict, pages: int, chars: int) -> dict:
     jd_sk = matched.get("jd_skills") or []
@@ -86,57 +88,40 @@ def _build_result_payload(analysis: dict, matched: dict, pages: int, chars: int)
         "runtime_ms": matched.get("runtime_ms", 0),
     }
 
-
 def _abs_url(request: Request, path: str) -> str:
     return f"{request.url.scheme}://{request.url.netloc}{path}"
-
 
 def _url_with_query(base_path: str, page: int, page_size: int) -> str:
     return f"{base_path}?page={page}&page_size={page_size}"
 
-
-def track(request: Request, event: str, props: Optional[dict] = None) -> None:
-    """Fire a PostHog event (no-ops if not configured)."""
+def track(request: Request, event: str, props: Optional[dict]=None) -> None:
     try:
-        if not cfg.posthog_key:
-            return
+        if not cfg.posthog_key: return
         uid = request.session.get("user_id") if hasattr(request, "session") else None
         ident = str(uid) if uid else (request.client.host if request.client else "0.0.0.0")
         posthog.capture(ident, event, properties=props or {})
     except Exception:
-        # Don't let analytics break the UX
         pass
-
-
-def _current_user(request: Request, db: Session) -> Optional[User]:
-    """Resolve current user from session (if any)."""
-    uid = request.session.get("user_id") if hasattr(request, "session") else None
-    return db.get(User, uid) if uid else None
-
 
 # --------------------
 # Routes
 # --------------------
 @router.get("/", response_class=HTMLResponse)
 async def landing(request: Request, db: Session = Depends(get_db)):
-    # Capture UTM for attribution and stash in session
-    utm_params = {}
-    for k in ("utm", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"):
-        v = request.query_params.get(k)
-        if v:
-            utm_params[k] = v
-    if utm_params and hasattr(request, "session"):
-        request.session["utm"] = utm_params
+    # capture utm
+    utm = {k: request.query_params.get(k) for k in ("utm","utm_source","utm_medium","utm_campaign","utm_term","utm_content")}
+    utm = {k:v for k,v in utm.items() if v}
+    if utm and hasattr(request, "session"):
+        request.session["utm"] = utm
 
-    track(request, "pageview", {"path": "/"})
     user = _current_user(request, db)
+    track(request, "pageview", {"path": "/"})
     return templates.TemplateResponse("landing.html", {"request": request, "user": user})
-
 
 @router.get("/analyze", response_class=HTMLResponse)
 async def analyze_page(request: Request, db: Session = Depends(get_db)):
-    track(request, "pageview", {"path": "/analyze"})
     user = _current_user(request, db)
+    track(request, "pageview", {"path": "/analyze"})
     return templates.TemplateResponse(
         "index.html",
         {
@@ -149,52 +134,35 @@ async def analyze_page(request: Request, db: Session = Depends(get_db)):
         },
     )
 
-
 @router.get("/demo", response_class=HTMLResponse)
 async def demo(request: Request, db: Session = Depends(get_db)):
+    user = _current_user(request, db)
     track(request, "analyze_clicked", {"demo": True})
 
-    demo_resume = """
-Built a FastAPI backend with PostgreSQL and Docker; added Redis cache and GitHub Actions CI.
-Implemented REST APIs (auth, pagination). Deployed to AWS via Terraform. Wrote tests with pytest.
-"""
+    demo_resume = (
+        "Built a FastAPI backend with PostgreSQL and Docker; added Redis cache and GitHub Actions CI.\n"
+        "Implemented REST APIs (auth, pagination). Deployed to AWS via Terraform. Wrote tests with pytest."
+    )
     demo_jd = "Backend engineer with Python/FastAPI, PostgreSQL, Redis, Docker, CI/CD and AWS/Terraform."
 
     resume = Resume(filename="demo.txt", text=_clean_text(demo_resume))
-    db.add(resume)
-    db.commit()
-    db.refresh(resume)
+    db.add(resume); db.commit(); db.refresh(resume)
 
     job = Job(title="Demo JD", description=_clean_text(demo_jd))
-    db.add(job)
-    db.commit()
-    db.refresh(job)
+    db.add(job); db.commit(); db.refresh(job)
 
     analysis = analyze_resume(db, resume)
     matched = match_resume_job(db, resume, job)
     result = _build_result_payload(analysis, matched, pages=1, chars=len(demo_resume))
 
-    # Attach UTM if present
-    if hasattr(request, "session"):
-        utm = request.session.get("utm")
-        if utm:
-            result["utm"] = utm
+    if hasattr(request, "session") and (utm := request.session.get("utm")):
+        result["utm"] = utm
 
-    # Tie report to user if logged in
-    user_id = request.session.get("user_id") if hasattr(request, "session") else None
-    rpt = create_report(
-        db,
-        payload=result,
-        resume_id=resume.id,
-        job_id=job.id,
-        match_id=None,
-        user_id=user_id,
-    )
+    user_id = user.id if user else None
+    rpt = create_report(db, payload=result, resume_id=resume.id, job_id=job.id, match_id=None, user_id=user_id)
 
     share_url = _abs_url(request, f"/r/{rpt.slug}")
     track(request, "analyze_success", {"demo": True, "match_score": result.get("match_score")})
-
-    user = _current_user(request, db)
     return templates.TemplateResponse(
         "index.html",
         {
@@ -207,7 +175,6 @@ Implemented REST APIs (auth, pagination). Deployed to AWS via Terraform. Wrote t
         },
     )
 
-
 @router.post("/ui-match", response_class=HTMLResponse)
 async def ui_match(
     request: Request,
@@ -215,11 +182,11 @@ async def ui_match(
     job_description: str = Form(...),
     db: Session = Depends(get_db),
 ):
+    user = _current_user(request, db)
     track(request, "analyze_clicked", {"demo": False})
 
     if file.content_type != "application/pdf":
         track(request, "analyze_fail", {"reason": "not_pdf"})
-        user = _current_user(request, db)
         return templates.TemplateResponse(
             "index.html",
             {
@@ -238,7 +205,6 @@ async def ui_match(
 
     if len(text) < 40 or len(jd_text) < 40:
         track(request, "analyze_fail", {"reason": "short_input"})
-        user = _current_user(request, db)
         return templates.TemplateResponse(
             "index.html",
             {
@@ -252,35 +218,20 @@ async def ui_match(
         )
 
     resume = Resume(filename=file.filename, text=text)
-    db.add(resume)
-    db.commit()
-    db.refresh(resume)
+    db.add(resume); db.commit(); db.refresh(resume)
 
     job = Job(title="Job Description", description=jd_text)
-    db.add(job)
-    db.commit()
-    db.refresh(job)
+    db.add(job); db.commit(); db.refresh(job)
 
     analysis = analyze_resume(db, resume)
     matched = match_resume_job(db, resume, job)
     result = _build_result_payload(analysis, matched, pages=pages, chars=chars)
 
-    # Attach UTM if present
-    if hasattr(request, "session"):
-        utm = request.session.get("utm")
-        if utm:
-            result["utm"] = utm
+    if hasattr(request, "session") and (utm := request.session.get("utm")):
+        result["utm"] = utm
 
-    # Tie report to user if logged in
-    user_id = request.session.get("user_id") if hasattr(request, "session") else None
-    rpt = create_report(
-        db,
-        payload=result,
-        resume_id=resume.id,
-        job_id=job.id,
-        match_id=None,
-        user_id=user_id,
-    )
+    user_id = user.id if user else None
+    rpt = create_report(db, payload=result, resume_id=resume.id, job_id=job.id, match_id=None, user_id=user_id)
 
     share_url = _abs_url(request, f"/r/{rpt.slug}")
     track(
@@ -288,8 +239,6 @@ async def ui_match(
         "analyze_success",
         {"demo": False, "pages": pages, "chars": chars, "match_score": result.get("match_score")},
     )
-
-    user = _current_user(request, db)
     return templates.TemplateResponse(
         "index.html",
         {
@@ -302,22 +251,23 @@ async def ui_match(
         },
     )
 
-
 @router.get("/r/{slug}.pdf")
 async def public_report_pdf(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = _current_user(request, db)
     rpt = get_report(db, slug)
     if not rpt:
         raise HTTPException(status_code=404, detail="Report not found")
 
     buf = BytesIO()
     generate_report_pdf(buf, rpt.payload)
-    headers = {"Content-Disposition": f'inline; filename=\"devmatch-{slug}.pdf\"'}
+    headers = {"Content-Disposition": f'inline; filename="devmatch-{slug}.pdf"'}
     track(request, "download_pdf", {"slug": slug})
+    # no template here; PDF stream
     return StreamingResponse(buf, headers=headers, media_type="application/pdf")
-
 
 @router.get("/r/{slug}", response_class=HTMLResponse)
 async def public_report(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = _current_user(request, db)
     rpt = get_report(db, slug)
     if not rpt:
         raise HTTPException(status_code=404, detail="Report not found")
@@ -330,7 +280,6 @@ async def public_report(slug: str, request: Request, db: Session = Depends(get_d
     }
 
     track(request, "share_view", {"slug": slug})
-    user = _current_user(request, db)
     return templates.TemplateResponse(
         "index.html",
         {
@@ -344,45 +293,28 @@ async def public_report(slug: str, request: Request, db: Session = Depends(get_d
         },
     )
 
-
-# ---------- Dashboard: "My analyses" ----------
 @router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(
-    request: Request,
-    db: Session = Depends(get_db),
-    page: int = 1,
-    page_size: int = 20,
-):
-    uid = request.session.get("user_id") if hasattr(request, "session") else None
-    if not uid:
-        # Not logged in → back to landing (or show message)
-        return RedirectResponse(url="/?error=login_required")
-
-    user: Optional[User] = db.get(User, uid)
+async def dashboard(request: Request, db: Session = Depends(get_db), page: int = 1, page_size: int = 20):
+    user = _current_user(request, db)
     if not user:
-        request.session.clear()
         return RedirectResponse(url="/?error=login_required")
 
-    # clamp page & size
+    # clamp paging
     page = max(1, int(page or 1))
     page_size = max(5, min(100, int(page_size or 20)))
     offset = (page - 1) * page_size
 
-    # total count
-    total = db.query(func.count(Report.id)).filter(Report.user_id == uid).scalar() or 0
+    total = db.query(func.count(Report.id)).filter(Report.user_id == user.id).scalar() or 0
     pages = max(1, (total + page_size - 1) // page_size)
-
-    # fetch page
     reports = (
         db.query(Report)
-        .filter(Report.user_id == uid)
+        .filter(Report.user_id == user.id)
         .order_by(Report.created_at.desc().nullslast())
         .offset(offset)
         .limit(page_size)
         .all()
     )
 
-    # Build lightweight card objects for template (title optional)
     cards = []
     for r in reports:
         p = r.payload or {}

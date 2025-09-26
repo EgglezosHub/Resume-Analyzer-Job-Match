@@ -2,50 +2,48 @@
 <html lang="en" class="h-full">
 <head>
   <meta charset="utf-8" />
-  <title>DevMatch — Tech Resume & JD Analyzer</title>
+  <title>DevMatch — Resume insights tailored to developers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] }}}}
+  </script>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100">
-  <div class="max-w-5xl mx-auto px-6 py-14">
-    <header class="mb-6 flex items-center justify-between">
-      <a href="/" class="text-2xl font-extrabold">DevMatch</a>
-      <nav class="flex items-center gap-2">
-        {% if user %}
-          <span class="hidden sm:inline text-sm text-slate-300/80">Hi, {{ user.name or user.email }}</span>
-          <a href="/dashboard" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Dashboard</a>
-          <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200/20 text-white text-sm border border-white/10">Logout</a>
-        {% else %}
-          <a href="/login/github" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Login with GitHub</a>
-          <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Login</a>
-          <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
-        {% endif %}
-        {% if not user %}<a class="px-3 py-1.5 rounded bg-indigo-500 text-white text-sm" href="/demo">Try Demo</a>{% endif %}
-
-        <a class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm" href="/analyze">Analyze</a>
-      </nav>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="max-w-5xl mx-auto px-5 py-8">
+    <!-- Wrap-friendly header -->
+    <header class="mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <a href="/" class="text-2xl font-extrabold mr-4">DevMatch</a>
+        <nav class="flex flex-wrap gap-2">
+          {% if user %}
+            <span class="hidden sm:inline text-sm text-slate-500 self-center">Hi, {{ user.name or user.email }}</span>
+            <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
+            <a href="/dashboard" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Dashboard</a>
+            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+          {% else %}
+            <a href="/login/github" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Login with GitHub</a>
+            <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
+            <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
+          {% endif %}
+        </nav>
+      </div>
     </header>
 
+    <main class="mt-6">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Resume ↔ Job Description, matched.</h1>
+      <p class="mt-3 text-slate-600 max-w-2xl">
+        Get skill overlap, semantic similarity, gaps, and concrete suggestions for developer roles.
+      </p>
 
-    <section class="mt-16 grid md:grid-cols-2 gap-10 items-center">
-      <div>
-        <h2 class="text-4xl font-extrabold leading-tight">Instant fit check for <span class="text-indigo-400">software roles</span>.</h2>
-        <p class="mt-4 text-slate-300">Upload your developer resume and a JD, then get JD-skill coverage, semantic similarity, missing skills, and actionable tips.</p>
-        <div class="mt-6 flex gap-3">
-          <a href="/demo" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 font-semibold">See it in action</a>
-          <a href="/analyze" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold">Analyze yours</a>
-        </div>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/analyze" class="px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold">Analyze my resume</a>
+        {% if not user %}
+          <a href="/demo" class="px-4 py-2.5 rounded border border-slate-200 text-slate-900">Try demo</a>
+        {% endif %}
       </div>
-      <div class="rounded-xl bg-slate-800/70 border border-slate-700 p-5">
-        <ul class="space-y-3 text-sm">
-          <li>✓ Strict, alias-aware skill extraction over a broad tech dictionary</li>
-          <li>✓ Scores you can trust: JD Skill Coverage + Semantic Similarity</li>
-          <li>✓ Shareable, read-only report links and PDF export</li>
-          <li>✓ Smart tips (cloud, IaC, frameworks, DevOps, metrics)</li>
-        </ul>
-      </div>
-    </section>
+    </main>
   </div>
 </body>
 </html>
