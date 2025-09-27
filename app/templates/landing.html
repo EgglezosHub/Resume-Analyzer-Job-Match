@@ -17,19 +17,21 @@
           <a href="/dashboard" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Dashboard</a>
           <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200/20 text-white text-sm border border-white/10">Logout</a>
         {% else %}
-            <a href="/login/github"
-               class="inline-flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600
-                      ring-1 ring-white/15 px-3 py-2"
-               title="Login with GitHub" aria-label="Login with GitHub">
-              <img src="/images/logo.png" alt="" class="h-6 w-6 object-contain" />
-              <span class="sr-only">Login with GitHub</span>
-            </a>
+          <a href="/login/github"
+             class="inline-flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600
+                    ring-1 ring-white/15 px-3 py-2"
+             title="Login with GitHub" aria-label="Login with GitHub">
+            <img src="/images/logo.png" alt="GitHub login"
+                 class="h-6 w-6 object-contain filter brightness-0 invert" />
+            <span class="sr-only">Login with GitHub</span>
+          </a>
           <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Login</a>
           <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
         {% endif %}
         <a class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm" href="/analyze">Analyze</a>
       </nav>
     </header>
+
 
 
     <section class="mt-16 grid md:grid-cols-2 gap-10 items-center">
