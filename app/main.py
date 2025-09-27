@@ -8,6 +8,10 @@ from app.core.config import settings
 from app.db.session import Base, engine
 from app.routes import ui, auth
 
+from fastapi.staticfiles import StaticFiles
+import os
+
+
 # init DB
 Base.metadata.create_all(bind=engine)
 
@@ -19,6 +23,13 @@ app = FastAPI(title=settings.api_title, version=settings.api_version)
 
 # sessions (for OAuth + rate limits)
 app.add_middleware(SessionMiddleware, secret_key=settings.oauth_secret, https_only=False)
+
+app.mount(
+    "/images",
+    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "images")),
+    name="images",
+)
+
 
 # routers
 app.include_router(ui.router, tags=["ui"])
