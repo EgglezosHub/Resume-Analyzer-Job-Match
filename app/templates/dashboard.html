@@ -41,26 +41,42 @@
   <div class="max-w-6xl mx-auto px-5 py-8">
     <!-- Header (wrap-friendly, auth-aware) -->
     <header class="mb-6">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <a href="/" class="text-2xl font-extrabold mr-4">DevMatch</a>
-        <nav class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- Title -->
+        <a href="/" class="text-2xl font-extrabold">DevMatch</a>
+
+        <!-- Right-side buttons -->
+        <div class="w-full sm:w-auto mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
+          {% if result and share_url %}
+            <button id="copyLink" type="button" data-share-url="{{ share_url }}"
+                    class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Copy share link</button>
+            <a href="{{ share_url }}.pdf" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Download report (PDF)</a>
+          {% endif %}
+
           {% if user %}
-            <span class="hidden sm:inline text-sm text-slate-500 self-center">Hi, {{ user.name or user.email }}</span>
-            <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
-            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Logout</a>
+            <span class="hidden sm:inline text-sm text-slate-500 dark:text-slate-300 self-center">
+              Hi, {{ user.name or user.email }}
+            </span>
+            <a href="/dashboard" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Dashboard</a>
+            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Logout</a>
           {% else %}
-              <a href="/login/github"
-                 class="inline-flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600
-                        ring-1 ring-white/15 px-3 py-2"
-                 title="Login with GitHub" aria-label="Login with GitHub">
-                <img src="/images/logo.png" alt="GitHub login"
-                     class="h-6 w-6 object-contain filter brightness-0 invert" />
-                <span class="sr-only">Login with GitHub</span>
-              </a>
+            <a href="/login/github"
+               class="inline-flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 ring-1 ring-white/15 px-3 py-2"
+               title="Login with GitHub" aria-label="Login with GitHub">
+              <img src="/images/logo.png" alt="GitHub login" class="h-6 w-6 object-contain" />
+              <span class="sr-only">Login with GitHub</span>
+            </a>
             <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
             <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
           {% endif %}
-        </nav>
+
+          <a href="/analyze" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Analyze</a>
+
+          <button id="themeBtn"
+                  class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">
+            Theme
+          </button>
+        </div>
       </div>
     </header>
 

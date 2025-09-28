@@ -9,32 +9,45 @@
 </head>
 <body class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100">
   <div class="max-w-5xl mx-auto px-6 py-14">
-    <header class="mb-6 flex items-center justify-between">
-      <a href="/" class="text-2xl font-extrabold">DevMatch</a>
-      <nav class="flex items-center gap-2">
-        {% if user %}
-          <span class="hidden sm:inline text-sm text-slate-300/80">Hi, {{ user.name or user.email }}</span>
-          <a href="/dashboard" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Dashboard</a>
-          <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200/20 text-white text-sm border border-white/10">Logout</a>
-        {% else %}
-          <a href="/login/github"
-             class="inline-flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600
-                    ring-1 ring-white/15 px-3 py-2"
-             title="Login with GitHub" aria-label="Login with GitHub">
-            <img src="/images/logo.png" alt="GitHub login"
-                 class="h-6 w-6 object-contain filter brightness-0 invert" />
-            <span class="sr-only">Login with GitHub</span>
-          </a>
-          <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Login</a>
-          <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
-        {% endif %}
-        <a class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm" href="/analyze">Analyze</a>
-      </nav>
+    <header class="mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- Title -->
+        <a href="/" class="text-2xl font-extrabold">DevMatch</a>
+
+        <!-- Right-side buttons -->
+        <div class="w-full sm:w-auto mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
+          {% if result and share_url %}
+            <button id="copyLink" type="button" data-share-url="{{ share_url }}"
+                    class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Copy share link</button>
+            <a href="{{ share_url }}.pdf" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Download report (PDF)</a>
+          {% endif %}
+
+          {% if user %}
+            <span class="hidden sm:inline text-sm text-slate-500 dark:text-slate-300 self-center">
+              Hi, {{ user.name or user.email }}
+            </span>
+            <a href="/dashboard" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Dashboard</a>
+            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Logout</a>
+          {% else %}
+            <a href="/login/github"
+               class="inline-flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 ring-1 ring-white/15 px-3 py-2"
+               title="Login with GitHub" aria-label="Login with GitHub">
+              <img src="/images/logo.png" alt="GitHub login" class="h-6 w-6 object-contain" />
+              <span class="sr-only">Login with GitHub</span>
+            </a>
+            <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
+            <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
+          {% endif %}
+
+          <a href="/analyze" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Analyze</a>
+
+          <button id="themeBtn"
+                  class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">
+            Theme
+          </button>
+        </div>
+      </div>
     </header>
-
-
-
-
     <section class="mt-16 grid md:grid-cols-2 gap-10 items-center">
       <div>
         <h2 class="text-4xl font-extrabold leading-tight">Instant fit check for <span class="text-indigo-400">software roles</span>.</h2>
