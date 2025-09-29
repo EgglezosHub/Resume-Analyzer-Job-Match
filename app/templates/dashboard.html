@@ -1,64 +1,40 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
 <head>
   <meta charset="utf-8" />
   <title>DevMatch — My analyses</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Inter + Tailwind (same setup as index/landing) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] } } }
-    }
-  </script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','ui-sans-serif','system-ui']}}}}</script>
 
   <style>
-    .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .55rem;border-radius:.6rem;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;font-size:.8rem}
-    .dark .chip{background:linear-gradient(180deg,#0f172a,#0b1324);border-color:#1f2937;color:#e5e7eb}
-    .chip-amber{background:linear-gradient(180deg,#fff7ed,#fffbeb);border-color:#fde68a}
-    .dark .chip-amber{background:linear-gradient(180deg,#1f2937,#111827);border-color:#f59e0b;color:#fcd34d}
-    .chip-green{background:linear-gradient(180deg,#ecfdf5,#f0fdf4);border-color:#a7f3d0}
-    .dark .chip-green{background:linear-gradient(180deg,#1f2937,#111827);border-color:#10b981;color:#86efac}
-    .chip-sky{background:linear-gradient(180deg,#f0f9ff,#eff6ff);border-color:#bae6fd}
-    .dark .chip-sky{background:linear-gradient(180deg,#0b1324,#0b1220);border-color:#38bdf8;color:#bae6fd}
+    .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .55rem;border-radius:.6rem;background:linear-gradient(180deg,#0f172a,#0b1324);border:1px solid #1f2937;color:#e5e7eb;font-size:.8rem}
+    .chip-amber{background:linear-gradient(180deg,#1f2937,#111827);border-color:#f59e0b;color:#fcd34d}
+    .chip-green{background:linear-gradient(180deg,#1f2937,#111827);border-color:#10b981;color:#86efac}
+    .chip-sky{background:linear-gradient(180deg,#0b1324,#0b1220);border-color:#38bdf8;color:#bae6fd}
 
-    .card{background:rgba(255,255,255,.75);border:1px solid rgba(15,23,42,.06);border-radius:1rem}
-    .dark .card{background:rgba(15,23,42,.5);border-color:rgba(148,163,184,.15)}
+    .card{background:rgba(15,23,42,.5);border:1px solid rgba(148,163,184,.15);border-radius:1rem}
     .score-badge{font-weight:700;border-radius:.55rem;padding:.15rem .5rem;font-size:.75rem}
-    .score-weak{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c}
-    .dark .score-weak{background:#2a0e0e;border-color:#7f1d1d;color:#fecaca}
-    .score-medium{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-    .dark .score-medium{background:#1f1a06;border-color:#f59e0b;color:#fcd34d}
-    .score-strong{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-    .dark .score-strong{background:#0d1f16;border-color:#10b981;color:#86efac}
+    .score-weak{background:#2a0e0e;border:1px solid #7f1d1d;color:#fecaca}
+    .score-medium{background:#1f1a06;border:1px solid #f59e0b;color:#fcd34d}
+    .score-strong{background:#0d1f16;border:1px solid #10b981;color:#86efac}
   </style>
 </head>
 
-<body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-200">
+<body class="min-h-screen bg-slate-900 text-slate-200">
   <div class="max-w-6xl mx-auto px-5 py-8">
-    <!-- Header (wrap-friendly, auth-aware) -->
+    <!-- Wrap-friendly, auth-aware header -->
     <header class="mb-6">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <!-- Title -->
         <a href="/" class="text-2xl font-extrabold">DevMatch</a>
 
-        <!-- Right-side buttons -->
-        <div class="w-full sm:w-auto mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
-          {% if result and share_url %}
-            <button id="copyLink" type="button" data-share-url="{{ share_url }}"
-                    class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Copy share link</button>
-            <a href="{{ share_url }}.pdf" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Download report (PDF)</a>
-          {% endif %}
-
+        <nav class="w-full sm:w-auto mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
           {% if user %}
-            <span class="hidden sm:inline text-sm text-slate-500 dark:text-slate-300 self-center">
-              Hi, {{ user.name or user.email }}
-            </span>
-            <a href="/dashboard" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Dashboard</a>
-            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-800 text-white text-sm">Logout</a>
+            <span class="hidden sm:inline text-sm text-slate-300/80 self-center">Hi, {{ user.name or user.email }}</span>
+            <a href="/analyze" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">New analysis</a>
+            <a href="/logout" class="px-3 py-1.5 rounded bg-slate-200/20 text-white text-sm border border-white/10">Logout</a>
           {% else %}
             <a href="/login/github"
                class="inline-flex items-center justify-center rounded bg-slate-700 hover:bg-slate-600 ring-1 ring-white/15 px-3 py-2"
@@ -66,17 +42,10 @@
               <img src="/images/logo.png" alt="GitHub login" class="h-6 w-6 object-contain" />
               <span class="sr-only">Login with GitHub</span>
             </a>
-            <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-200 text-slate-900 text-sm">Login</a>
+            <a href="/login/password" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Login</a>
             <a href="/signup" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm">Sign up</a>
           {% endif %}
-
-          <a href="/analyze" class="px-3 py-1.5 rounded bg-slate-700 text-white text-sm">Analyze</a>
-
-          <button id="themeBtn"
-                  class="px-3 py-1.5 rounded bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 text-sm">
-            Theme
-          </button>
-        </div>
+        </nav>
       </div>
     </header>
 
@@ -84,7 +53,7 @@
     <div class="mb-6 flex items-center justify-between gap-3">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold">My analyses</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <p class="text-sm text-slate-400 mt-1">
           Your latest matches and scores. Click any card to view the full report.
         </p>
       </div>
@@ -98,9 +67,9 @@
 
     <!-- Content -->
     {% if not cards or not cards|length %}
-      <div class="card p-6 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+      <div class="card p-6 border border-dashed border-slate-700 text-center">
         <div class="text-lg font-semibold mb-1">No analyses yet</div>
-        <p class="text-sm text-slate-600 dark:text-slate-400">
+        <p class="text-sm text-slate-400">
           Run your first one to see insights tailored to your resume.
         </p>
         <a href="/analyze" class="inline-block mt-4 px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold">
@@ -115,7 +84,7 @@
           {% set badge = 'score-strong' if label=='Strong' else ('score-medium' if label=='Medium' else 'score-weak') %}
 
           <a href="{{ c.share_url }}"
-             class="card group block p-4 hover:shadow-lg transition-shadow border border-slate-200 dark:border-slate-700">
+             class="card group block p-4 hover:shadow-lg transition-shadow border border-slate-700">
             <div class="flex items-start justify-between">
               <div>
                 <div class="text-2xl font-extrabold tracking-tight">{{ '%.2f'|format(score) }}</div>
@@ -123,34 +92,31 @@
                   <span class="score-badge {{ badge }}">{{ label }}</span>
                 </div>
               </div>
-              <div class="text-xs text-slate-500 dark:text-slate-400 ml-3 text-right">
+              <div class="text-xs text-slate-400 ml-3 text-right">
                 {{ c.created_at }}
               </div>
             </div>
-            <div class="mt-3 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">
+
+            <div class="mt-3 text-sm text-slate-300 line-clamp-2">
               {{ c.title }}
             </div>
-            <div class="mt-4 text-xs text-indigo-600 group-hover:underline">Open report →</div>
+
+            <div class="mt-4 text-xs text-indigo-400 group-hover:underline">Open report →</div>
           </a>
         {% endfor %}
       </div>
 
       {% if pagination and (pagination.has_prev or pagination.has_next) %}
         <div class="mt-8 flex items-center justify-between text-sm">
-          <a class="px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700 {{ '' if pagination.has_prev else 'pointer-events-none opacity-40' }}"
+          <a class="px-3 py-1.5 rounded border border-slate-700 {{ '' if pagination.has_prev else 'pointer-events-none opacity-40' }}"
              href="{{ pagination.prev_url or '#' }}">← Prev</a>
-          <div class="text-slate-600 dark:text-slate-400">Page {{ pagination.page }} / {{ pagination.pages }}</div>
-          <a class="px-3 py-1.5 rounded border border-slate-200 dark:border-slate-700 {{ '' if pagination.has_next else 'pointer-events-none opacity-40' }}"
+          <div class="text-slate-400">Page {{ pagination.page }} / {{ pagination.pages }}</div>
+          <a class="px-3 py-1.5 rounded border border-slate-700 {{ '' if pagination.has_next else 'pointer-events-none opacity-40' }}"
              href="{{ pagination.next_url or '#' }}">Next →</a>
         </div>
       {% endif %}
     {% endif %}
   </div>
-
-  <script>
-    const root=document.documentElement,KEY='resume_ui_theme';
-    if(localStorage.getItem(KEY)==='dark') root.classList.add('dark');
-  </script>
 </body>
 </html>
 
