@@ -79,9 +79,13 @@
                       placeholder="Paste the JD here…"></textarea>
           </div>
         </div>
-        <div class="mt-6">
+        <!-- ✅ Analyze button restored -->
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button id="submit-btn" type="submit" class="px-4 py-2.5 rounded bg-indigo-600 text-white font-semibold">
+            Analyze
+          </button>
           {% if not user %}
-            <a id="demoLink" class="ml-3 text-sm text-slate-400" href="/demo">or try demo →</a>
+            <a id="demoLink" class="text-sm text-slate-400" href="/demo">or try demo →</a>
           {% endif %}
         </div>
       </form>

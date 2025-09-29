@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     enable_email_signup: bool = False         # env: ENABLE_EMAIL_SIGNUP
 
     # Rate limits
-    anon_daily_limit: int = 1                 # env: ANON_DAILY_LIMIT
+    anon_daily_limit: int = 3                 # env: ANON_DAILY_LIMIT
     free_daily_limit: int = 15                # env: FREE_DAILY_LIMIT
     premium_unlimited: bool = False           # env: PREMIUM_UNLIMITED
     redis_url: Optional[str] = None           # env: REDIS_URL
